@@ -44,8 +44,13 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "ghostfolio.fullname" . }}
-          {{- with .Values.env }}
           env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ghostfolio.valkeyPasswordSecretName" . }}
+                  key: {{ include "ghostfolio.valkeyPasswordSecretKey" . }}
+          {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           ports:

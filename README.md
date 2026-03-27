@@ -1,17 +1,16 @@
 <!-- markdownlint-disable MD033 MD024 -->
 
-[![Latest Tag](https://img.shields.io/github/v/tag/ByTheHugo/ghostfolio-helm)](https://github.com/ByTheHugo/ghostfolio-helm/tags)
-[![Project License](https://img.shields.io/github/license/ByTheHugo/ghostfolio-helm)](https://github.com/ByTheHugo/ghostfolio-helm/blob/master/LICENSE)
-[![GitHub Last Commit](https://img.shields.io/github/last-commit/bythehugo/ghostfolio-helm)](https://github.com/ByTheHugo/ghostfolio-helm/commits/master/)
-[![GitHub Commit Activity](https://img.shields.io/github/commit-activity/m/bythehugo/ghostfolio-helm)](https://github.com/ByTheHugo/ghostfolio-helm/commits/master/)
-[![GitHub Repository](https://img.shields.io/badge/GitHub-ghostfolio--helm-lightgrey)](https://github.com/ByTheHugo/ghostfolio-helm)
-[![ArtifactHub Package](https://img.shields.io/badge/ArtifactHub.io-ghostfolio--helm-lightblue)](https://artifacthub.io/packages/helm/ghostfolio/ghostfolio)
+[![Latest Tag](https://img.shields.io/github/v/tag/J4NS-R/ghostfolio-helm)](https://github.com/J4NS-R/ghostfolio-helm/tags)
+[![Project License](https://img.shields.io/github/license/J4NS-R/ghostfolio-helm)](https://github.com/J4NS-R/ghostfolio-helm/blob/master/LICENSE)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/J4NS-R/ghostfolio-helm)](https://github.com/J4NS-R/ghostfolio-helm/commits/master/)
+[![GitHub Commit Activity](https://img.shields.io/github/commit-activity/m/J4NS-R/ghostfolio-helm)](https://github.com/J4NS-R/ghostfolio-helm/commits/master/)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-ghostfolio--helm-lightgrey)](https://github.com/J4NS-R/ghostfolio-helm)
 
 ![Ghostfolio Helm banner](docs/ghostfolio-helm-banner.png)
 
-# Ghostfolio Helm Chart
+# Unofficial Ghostfolio Helm Chart
 
-This project provides a _Helm_ chart for deploying **[Ghostfolio: the Open Source Wealth Management Software](https://github.com/ghostfolio/ghostfolio)** into any _Kubernetes_ cluster. It integrates the official _Docker_ images built by the _Ghostfolio_ team and hosted on _[DockerHub](https://hub.docker.com/r/ghostfolio/ghostfolio)_. It also includes _[PostgreSQL](https://artifacthub.io/packages/helm/bitnami/postgresql)_ and _[Redis](https://artifacthub.io/packages/helm/bitnami/redis)_ servers that use the **Bitnami** charts, but it is easy to provide your own.
+This project provides a _Helm_ chart for deploying **[Ghostfolio: the Open Source Wealth Management Software](https://github.com/ghostfolio/ghostfolio)** into any _Kubernetes_ cluster. It integrates the official _Docker_ images built by the _Ghostfolio_ team and hosted on _[DockerHub](https://hub.docker.com/r/ghostfolio/ghostfolio)_. It also includes PostgreSQL and [Valkey](https://github.com/valkey-io/valkey-helm).
 
 The charts are built and then published to these project _GitHub Pages_, allowing anyone to quickly deploy and test the application.
 
@@ -22,7 +21,7 @@ The charts are built and then published to these project _GitHub Pages_, allowin
   - [1.1. Prerequisite](#11-prerequisite)
   - [1.2. Configure the application](#12-configure-the-application)
     - [1.2.1. Use an external PostgreSQL server](#121-use-an-external-postgresql-server)
-    - [1.2.2. Use an external Redis server](#122-use-an-external-redis-server)
+    - [1.2.2. Use an external Valkey server](#122-use-an-external-valkey-server)
   - [1.3. Install the application](#13-install-the-application)
     - [1.3.1. Add the GitHub Helm repository (optional)](#131-add-the-github-helm-repository-optional)
     - [1.3.2. Install the chart](#132-install-the-chart)
@@ -30,17 +29,14 @@ The charts are built and then published to these project _GitHub Pages_, allowin
     - [1.3.3. Verify the deployment](#133-verify-the-deployment)
   - [1.4. Uninstall the application](#14-uninstall-the-application)
   - [1.5. License](#15-license)
-  - [1.6. Contact](#16-contact)
 
 ## 1.1. Prerequisite
 
 - A **Kubernetes** cluster,
 - A **PostgreSQL** server (optional),
-- A **Redis** instance (optional),
+- A **Valkey** instance (optional),
 - The **Helm** client installed locally (see _[Quickstart Guide](https://helm.sh/docs/intro/quickstart/)_),
 - The `kubectl` command-line tool installed locally (optionnal, see _[Install Tools](https://kubernetes.io/docs/tasks/tools/)_)
-
-<p align="right"><a href="#ghostfolio-helm-chart">back to top</a></p>
 
 ## 1.2. Configure the application
 
@@ -64,13 +60,16 @@ Like any other _Helm_ chart, the available configuration options can be found in
         password: ghostfolio-password
         database: ghostfolio-db
 
-    # For more information checkout: https://artifacthub.io/packages/helm/bitnami/redis
-    redis:
+    # For more information checkout: https://github.com/valkey-io/valkey-helm
+    valkey:
       enabled: true
-      architecture: standalone
       auth:
         enabled: true
-        password: redis-password
+        usersExistingSecret: "my-valkey-secret"
+        aclUsers:
+          default:
+            permissions: "~* &* +@all"
+      passwordSecretKey: "default"
 
     ingress:
       enabled: true
@@ -98,17 +97,24 @@ externalPostgresql:
   options: connect_timeout=300&sslmode=prefer
 ```
 
-### 1.2.2. Use an external Redis server
+### 1.2.2. Use an external Valkey server
 
-By default, the chart deploys a _Redis_ server via a subchart dependency. However, if want to use your own instance, you can set the following values:
+By default, the chart deploys a _Valkey_ server via a subchart dependency. However, if you want to use your own instance, you can set the following values:
 
 ```yaml
-redis:
+valkey:
   enabled: false
-externalRedis:
-  host: redis.domain.fqdn
+externalValkey:
+  host: valkey.domain.fqdn
   port: 6379
-  password: "" # Leave empty to disable authentication
+  existingSecret: "my-valkey-secret"
+  existingSecretPasswordKey: "password"
+```
+
+**Note:** You must create the Kubernetes Secret containing the password before installing the chart. For example:
+
+```bash
+kubectl create secret generic my-valkey-secret --from-literal=password=my-secret-password
 ```
 
 <p align="right"><a href="#ghostfolio-helm-chart">back to top</a></p>
@@ -120,7 +126,7 @@ To deploy the application using Helm, follow these steps:
 ### 1.3.1. Add the GitHub Helm repository (optional)
 
 ```bash
-helm repo add ghostfolio https://bythehugo.github.io/ghostfolio-helm/
+helm repo add ghostfolio https://j4ns-r.github.io/ghostfolio-helm/
 helm repo update
 ```
 
@@ -186,13 +192,5 @@ kubectl get all -n <namespace> -l app=ghostfolio
 ## 1.5. License
 
 Distributed under the Apache 2.0 License. See `LICENSE` for more information.
-
-<p align="right"><a href="#ghostfolio-helm-chart">back to top</a></p>
-
-## 1.6. Contact
-
-Hugo CHUPIN - <hugo@chupin.xyz> - [hugo.chupin.xyz](https://hugo.chupin.xyz) - [@hugo.chupin.xyz](https://bsky.app/profile/hugo.chupin.xyz)
-
-Project link: [https://github.com/ByTheHugo/ghostfolio-helm](https://github.com/ByTheHugo/ghostfolio-helm)
 
 <p align="right"><a href="#ghostfolio-helm-chart">back to top</a></p>

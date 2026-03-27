@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 global:
-  # Global default StorageClass for Persistent Volume(s) (used for Redis and/or PostgreSQL)
+  # Global default StorageClass for Persistent Volume(s) (used for Valkey and/or PostgreSQL)
   defaultStorageClass: ""
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
@@ -45,19 +45,30 @@ externalPostgresql:
     database: external-ghostfolio-db
   options: connect_timeout=300&sslmode=prefer
 
-# This define the Redis server configuration that will be deployed using Helm subchart.
-# Set the .enabled key to false to use an external Redis server.
-# For more information checkout: https://artifacthub.io/packages/helm/bitnami/redis
-redis:
+# This defines the Valkey server configuration that will be deployed using Helm subchart.
+# Set the .enabled key to false to use an external Valkey/Redis server.
+# For more information checkout: https://github.com/valkey-io/valkey-helm
+valkey:
   enabled: true
-  architecture: standalone
   auth:
     enabled: true
-    password: redis-password
-externalRedis:
-  host: redis
+    # Name of an existing Secret containing the Valkey password.
+    # The Secret must contain a key matching the default user (see passwordSecretKey).
+    usersExistingSecret: ""
+    aclUsers:
+      default:
+        # Full read-write permissions by default
+        permissions: "~* &* +@all"
+  # Key within the existing Secret that holds the password for Ghostfolio to connect.
+  # This is used to inject REDIS_PASSWORD into the Ghostfolio deployment.
+  passwordSecretKey: "default"
+externalValkey:
+  host: "redis"
   port: 6379
-  password: "" # Leave empty to disable authentication
+  # Name of an existing Secret containing the Valkey/Redis password.
+  existingSecret: ""
+  # Key within the existing Secret that holds the password.
+  existingSecretPasswordKey: "password"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []

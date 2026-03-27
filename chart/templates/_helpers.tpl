@@ -75,9 +75,39 @@ Create the PostgreSQL database URL
 {{- end }}
 
 {{/*
-Create the Redis database URL
+Create the Valkey host - mirrors the valkey subchart's fullname logic
 */}}
-{{- define "ghostfolio.redisHost" -}}
-{{- $fullname := (include "ghostfolio.fullname" .) -}}
-{{ printf "%s-redis-master" $fullname }}
+{{- define "ghostfolio.valkeyHost" -}}
+{{- if .Values.valkey.fullnameOverride -}}
+{{- .Values.valkey.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default "valkey" .Values.valkey.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Get the name of the Secret containing the Valkey password
+*/}}
+{{- define "ghostfolio.valkeyPasswordSecretName" -}}
+{{- if .Values.valkey.enabled -}}
+{{ .Values.valkey.auth.usersExistingSecret }}
+{{- else -}}
+{{ .Values.externalValkey.existingSecret }}
+{{- end -}}
+{{- end }}
+
+{{/*
+Get the key within the Secret that holds the Valkey password
+*/}}
+{{- define "ghostfolio.valkeyPasswordSecretKey" -}}
+{{- if .Values.valkey.enabled -}}
+{{ .Values.valkey.passwordSecretKey | default "default" }}
+{{- else -}}
+{{ .Values.externalValkey.existingSecretPasswordKey | default "password" }}
+{{- end -}}
 {{- end }}
