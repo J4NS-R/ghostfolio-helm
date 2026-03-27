@@ -8,6 +8,8 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "ghostfolio.selectorLabels" . | nindent 6 }}
@@ -15,6 +17,7 @@ spec:
     metadata:
       annotations:
         checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -42,6 +45,8 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
+            - configMapRef:
+                name: {{ include "ghostfolio.fullname" . }}
             - secretRef:
                 name: {{ include "ghostfolio.fullname" . }}
           env:
@@ -50,6 +55,16 @@ spec:
                 secretKeyRef:
                   name: {{ include "ghostfolio.valkeyPasswordSecretName" . }}
                   key: {{ include "ghostfolio.valkeyPasswordSecretKey" . }}
+            - name: ACCESS_TOKEN_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.ghostfolio.existingSecret }}
+                  key: {{ .Values.ghostfolio.existingSecretKeys.ACCESS_TOKEN_SALT }}
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.ghostfolio.existingSecret }}
+                  key: {{ .Values.ghostfolio.existingSecretKeys.JWT_SECRET_KEY }}
           {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}

@@ -48,8 +48,7 @@ Like any other _Helm_ chart, the available configuration options can be found in
 
     ```yaml
     ghostfolio:
-      ACCESS_TOKEN_SALT: mysuperrandomstring
-      JWT_SECRET_KEY: mysuperrandomstring
+      existingSecret: "my-ghostfolio-secret"
       BASE_CURRENCY: EUR # or USD
 
     # For more information checkout: https://artifacthub.io/packages/helm/bitnami/postgresql

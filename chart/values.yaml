@@ -17,15 +17,18 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
-# This define the Ghostfolio configuration
+# This defines the Ghostfolio configuration
 ghostfolio:
-  ACCESS_TOKEN_SALT: ""
-  JWT_SECRET_KEY: ""
+  # Name of an existing Secret containing ACCESS_TOKEN_SALT and JWT_SECRET_KEY.
+  existingSecret: ""
+  # Keys within the existing Secret for each sensitive value.
+  existingSecretKeys:
+    ACCESS_TOKEN_SALT: "ACCESS_TOKEN_SALT"
+    JWT_SECRET_KEY: "JWT_SECRET_KEY"
   BASE_CURRENCY: EUR
-  API_KEY_COINGECKO_DEMO: ""
-  API_KEY_COINGECKO_PRO: ""
-  HOST: 0.0.0.0
   PORT: 3333
+  # Recommended to change this value to the actual external URL for ghostfolio
+  ROOT_URL: "http://0.0.0.0:3333"
 
 # This define the PostgreSQL server configuration that will be deployed using Helm subchart.
 # Set the .enabled key to false to use an external PostgreSQL server.

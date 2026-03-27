@@ -1,8 +1,7 @@
 ### Helm ###
 # Chart dependencies
 **/charts/*.tgz
-# Temporary values
-*.values.yaml
+
 # Chart releaser
 .cr-release-packages
 .cr-index

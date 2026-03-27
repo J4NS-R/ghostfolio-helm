@@ -1,0 +1,71 @@
+suite: test deployment
+templates:
+  - deployment.yaml
+  # deployment depends on these
+  - secrets.yaml
+  - configmap.yaml
+values:
+  - test.values.yaml
+chart:
+  appVersion: 1.2.3
+tests:
+  - it: uses the right image and tag
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghostfolio/ghostfolio:1.2.3
+
+  - it: uses built-in valkey secret name and default key
+    template: deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[0].name
+          value: REDIS_PASSWORD
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
+          value: valkey-secret
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.key
+          value: default
+
+  - it: uses custom passwordSecretKey for built-in valkey
+    template: deployment.yaml
+    set:
+      valkey.passwordSecretKey: my-custom-key
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
+          value: valkey-secret
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.key
+          value: my-custom-key
+
+  - it: uses external valkey secret name and default key
+    template: deployment.yaml
+    set:
+      valkey.enabled: false
+      externalValkey.existingSecret: my-external-secret
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
+          value: my-external-secret
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.key
+          value: password
+
+  - it: uses custom key for external valkey
+    template: deployment.yaml
+    set:
+      valkey.enabled: false
+      externalValkey.existingSecret: my-external-secret
+      externalValkey.existingSecretPasswordKey: redis-pass
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
+          value: my-external-secret
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.key
+          value: redis-pass
