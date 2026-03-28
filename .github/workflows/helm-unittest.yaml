@@ -1,4 +1,4 @@
-name: Helm Unittest
+name: Chart CI
 
 on:
   push:
@@ -23,3 +23,25 @@ jobs:
         uses: d3adb5/helm-unittest-action@v2.5.0
         with:
           charts: chart
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install chart-testing
+        uses: helm/chart-testing-action@v2.8.0
+
+      - name: Lint chart
+        run: ct lint --target-branch master --charts chart
