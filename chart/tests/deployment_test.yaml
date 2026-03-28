@@ -191,3 +191,13 @@ tests:
     asserts:
       - notExists:
           path: spec.template.spec.initContainers
+
+  - it: containerPort matches ghostfolio.PORT not service.port
+    template: deployment.yaml
+    set:
+      ghostfolio.PORT: 4444
+      service.port: 3333
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 4444
