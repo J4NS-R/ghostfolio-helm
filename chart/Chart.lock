@@ -1,9 +1,9 @@
 dependencies:
-- name: postgresql
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 16.7.13
-- name: redis
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 21.2.5
-digest: sha256:e961ab8a418176d4168818b7bae221a9575342fdd6fdd24b65f3a6791ac74a4a
-generated: "2025-06-25T20:56:14.841615784+02:00"
+- name: postgres
+  repository: oci://registry-1.docker.io/cloudpirates
+  version: 0.18.3
+- name: valkey
+  repository: https://valkey.io/valkey-helm/
+  version: 0.9.3
+digest: sha256:aa2dfbbe53012c1d09516d59bcca8c8cd54a0f298812e266f2b5af82c2b0a3e9
+generated: "2026-03-28T00:40:37.672948173+01:00"

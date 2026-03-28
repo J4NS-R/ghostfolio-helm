@@ -1,0 +1,276 @@
+suite: test deployment
+templates:
+  - deployment.yaml
+  # deployment depends on these
+  - configmap.yaml
+values:
+  - test.values.yaml
+chart:
+  appVersion: 1.2.3
+tests:
+  - it: uses the right image and tag
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghostfolio/ghostfolio:1.2.3
+
+  - it: injects DATABASE_URL from subchart secret when postgres enabled
+    template: deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: pg-secret
+                key: uri
+
+  - it: does not inject DATABASE_URL when postgres disabled
+    template: deployment.yaml
+    set:
+      postgres.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+          any: true
+
+  - it: allows inline DATABASE_URL via env when postgres disabled
+    template: deployment.yaml
+    set:
+      postgres.enabled: false
+      env:
+        - name: DATABASE_URL
+          value: "postgresql://user:pass@external-host:5432/mydb"
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: RELEASE-NAME-postgres
+                key: uri
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            value: "postgresql://user:pass@external-host:5432/mydb"
+
+  - it: allows DATABASE_URL from external secret via env when postgres disabled
+    template: deployment.yaml
+    set:
+      postgres.enabled: false
+      env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: my-external-db-secret
+              key: connection-string
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: my-external-db-secret
+                key: connection-string
+
+  - it: uses postgres fullnameOverride for secret name
+    template: deployment.yaml
+    set:
+      postgres:
+        fullnameOverride: custom-pg
+        auth:
+          existingSecret: ""
+          password: "hunter2"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: custom-pg
+                key: uri
+
+  - it: uses built-in valkey secret name and default key
+    template: deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: valkey-secret
+                key: default
+
+  - it: uses custom passwordSecretKey for built-in valkey
+    template: deployment.yaml
+    set:
+      valkey.passwordSecretKey: my-custom-key
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: valkey-secret
+                key: my-custom-key
+
+  - it: uses external valkey secret name and default key
+    template: deployment.yaml
+    set:
+      valkey.enabled: false
+      externalValkey.existingSecret: my-external-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: my-external-secret
+                key: password
+
+  - it: uses custom key for external valkey
+    template: deployment.yaml
+    set:
+      valkey.enabled: false
+      externalValkey.existingSecret: my-external-secret
+      externalValkey.existingSecretPasswordKey: redis-pass
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: my-external-secret
+                key: redis-pass
+
+  - it: has init container that waits for postgres and valkey
+    template: deployment.yaml
+    asserts:
+      - exists:
+          path: spec.template.spec.initContainers
+      - lengthEqual:
+          path: spec.template.spec.initContainers
+          count: 1
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: wait-for-dependencies
+
+  - it: init container waits only for valkey when postgres disabled
+    template: deployment.yaml
+    set:
+      postgres.enabled: false
+    asserts:
+      - exists:
+          path: spec.template.spec.initContainers
+      - matchRegex:
+          path: spec.template.spec.initContainers[0].command[2]
+          pattern: "RELEASE-NAME-valkey"
+      - notMatchRegex:
+          path: spec.template.spec.initContainers[0].command[2]
+          pattern: "RELEASE-NAME-postgres"
+
+  - it: has no init container when both postgres and valkey are disabled
+    template: deployment.yaml
+    set:
+      postgres.enabled: false
+      valkey.enabled: false
+      externalValkey.existingSecret: my-valkey-secret
+    asserts:
+      - notExists:
+          path: spec.template.spec.initContainers
+
+  - it: containerPort matches ghostfolio.PORT not service.port
+    template: deployment.yaml
+    set:
+      ghostfolio.PORT: 4444
+      service.port: 3333
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 4444
+
+  - it: uses /api/v1/health for liveness probe by default
+    template: deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /api/v1/health
+
+  - it: uses /api/v1/health for readiness probe by default
+    template: deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /api/v1/health
+
+  - it: uses /api/v1/health for startup probe by default
+    template: deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.httpGet.path
+          value: /api/v1/health
+
+  - it: init container uses initImage repository and tag
+    template: deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: "busybox:1.37"
+
+  - it: init container image can be overridden
+    template: deployment.yaml
+    set:
+      initImage.repository: alpine
+      initImage.tag: "3.20"
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: "alpine:3.20"
+
+  - it: init container command includes valkey port from values
+    template: deployment.yaml
+    set:
+      valkey.service.port: 6380
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.initContainers[0].command[2]
+          pattern: "6380"
+
+  - it: fails when built-in valkey secret name is empty
+    template: deployment.yaml
+    set:
+      valkey.auth.usersExistingSecret: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: "valkey.auth.usersExistingSecret is required when valkey.enabled=true — set it to the name of the Secret containing the Valkey password"
+
+  - it: fails when external valkey secret name is empty
+    template: deployment.yaml
+    set:
+      valkey.enabled: false
+      externalValkey.existingSecret: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: "externalValkey.existingSecret is required when valkey.enabled=false — set it to the name of the Secret containing the Redis/Valkey password"
+
+  - it: fails when ghostfolio existingSecret is empty
+    template: deployment.yaml
+    set:
+      ghostfolio.existingSecret: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: "ghostfolio.existingSecret is required — set it to the name of the Secret containing ACCESS_TOKEN_SALT and JWT_SECRET_KEY"

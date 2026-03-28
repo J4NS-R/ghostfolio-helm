@@ -1,10 +1,5 @@
 # Default values for ghostfolio.
-# This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
-global:
-  # Global default StorageClass for Persistent Volume(s) (used for Redis and/or PostgreSQL)
-  defaultStorageClass: ""
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -17,65 +12,75 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
-# This define the Ghostfolio configuration
+# Init container image used to wait for dependencies (Postgres, Valkey) before starting Ghostfolio.
+initImage:
+  repository: busybox
+  tag: "1.37"
+  pullPolicy: IfNotPresent
+
+# This defines the Ghostfolio configuration
 ghostfolio:
-  ACCESS_TOKEN_SALT: ""
-  JWT_SECRET_KEY: ""
+  # Name of an existing Secret containing ACCESS_TOKEN_SALT and JWT_SECRET_KEY.
+  existingSecret: ""
+  # Keys within the existing Secret for each sensitive value.
+  existingSecretKeys:
+    ACCESS_TOKEN_SALT: "ACCESS_TOKEN_SALT"
+    JWT_SECRET_KEY: "JWT_SECRET_KEY"
   BASE_CURRENCY: EUR
-  API_KEY_COINGECKO_DEMO: ""
-  API_KEY_COINGECKO_PRO: ""
-  HOST: 0.0.0.0
   PORT: 3333
+  # Recommended to change this value to the actual external URL for ghostfolio
+  ROOT_URL: "http://0.0.0.0:3333"
 
-# This define the PostgreSQL server configuration that will be deployed using Helm subchart.
-# Set the .enabled key to false to use an external PostgreSQL server.
-# For more information checkout: https://artifacthub.io/packages/helm/bitnami/postgresql
-postgresql:
+# This defines the PostgreSQL server configuration that will be deployed using Helm subchart.
+# For more information checkout: https://github.com/CloudPirates-io/helm-charts/tree/main/charts/postgres
+# To use an external PostgreSQL server, set postgres.enabled=false and add an item under `env` with
+# name=DATABASE_URL and either a `value` or `valueFrom` expression pointing to your connection string.
+postgres:
   enabled: true
   auth:
-    username: ghostfolio-user
-    password: ghostfolio-password
     database: ghostfolio-db
-externalPostgresql:
-  host: postgres
-  port: 5432
-  auth:
-    username: external-ghostfolio-user
-    password: external-ghostfolio-password
-    database: external-ghostfolio-db
-  options: connect_timeout=300&sslmode=prefer
+    username: ghostfolio-user
+    # Name of existing secret for postgres password.
+    # IMPORTANT: When set, this Secret MUST also contain a key named 'uri' with the
+    # full PostgreSQL connection string (e.g. postgresql://user:pass@host:5432/db).
+    # The built-in postgres subchart generates this key automatically; when providing
+    # your own Secret you must include it yourself.
+    existingSecret: ""
+    secretKeys:
+      adminPasswordKey: "postgres-password"
 
-# This define the Redis server configuration that will be deployed using Helm subchart.
-# Set the .enabled key to false to use an external Redis server.
-# For more information checkout: https://artifacthub.io/packages/helm/bitnami/redis
-redis:
+# This defines the Valkey server configuration that will be deployed using Helm subchart.
+# Set the .enabled key to false to use an external Valkey/Redis server.
+# For more information checkout: https://github.com/valkey-io/valkey-helm
+valkey:
   enabled: true
-  architecture: standalone
   auth:
     enabled: true
-    password: redis-password
-externalRedis:
-  host: redis
+    # Name of an existing Secret containing the Valkey password.
+    # The Secret must contain a key matching the default user (see passwordSecretKey).
+    usersExistingSecret: ""
+    aclUsers:
+      default:
+        # Full read-write permissions by default
+        permissions: "~* &* +@all"
+  # Key within the existing Secret that holds the password for Ghostfolio to connect.
+  # This is used to inject REDIS_PASSWORD into the Ghostfolio deployment.
+  passwordSecretKey: "default"
+  service:
+    port: 6379
+externalValkey:
+  host: "redis"
   port: 6379
-  password: "" # Leave empty to disable authentication
+  # Name of an existing Secret containing the Valkey/Redis password.
+  existingSecret: ""
+  # Key within the existing Secret that holds the password.
+  existingSecretPasswordKey: "password"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
 # This is to override the chart name.
 nameOverride: ""
 fullnameOverride: ""
-
-# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
 
 # This is for setting Kubernetes Annotations to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -100,27 +105,8 @@ securityContext:
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
-  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 3333
-
-# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: ghostfolio.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  port: 80
 
 # We usually recommend not to specify default resources and to leave this as a conscious
 # choice for the user. This also increases chances charts run on environments with little
@@ -137,19 +123,22 @@ resources: {}
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
-    path: /
+    path: /api/v1/health
     port: http
   initialDelaySeconds: 5
-  periodSeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 6
 readinessProbe:
   httpGet:
-    path: /
+    path: /api/v1/health
     port: http
   initialDelaySeconds: 5
   periodSeconds: 5
+  timeoutSeconds: 3
 startupProbe:
   httpGet:
-    path: /
+    path: /api/v1/health
     port: http
   failureThreshold: 30
   periodSeconds: 10

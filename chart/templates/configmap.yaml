@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ghostfolio.fullname" . }}
+  labels:
+    {{- include "ghostfolio.labels" . | nindent 4 }}
+data:
+  NPM_CONFIG_CACHE: /tmp/npm-cache
+  {{- if .Values.valkey.enabled }}
+  REDIS_HOST: {{ include "ghostfolio.valkeyHost" . | quote }}
+  REDIS_PORT: {{ .Values.valkey.service.port | quote }}
+  {{- else }}
+  REDIS_HOST: {{ .Values.externalValkey.host | quote }}
+  REDIS_PORT: {{ .Values.externalValkey.port | quote }}
+  {{- end }}
+  BASE_CURRENCY: {{ .Values.ghostfolio.BASE_CURRENCY | quote }}
+  PORT: {{ .Values.ghostfolio.PORT | quote }}
+  ROOT_URL: {{ $.Values.ghostfolio.ROOT_URL | quote }}

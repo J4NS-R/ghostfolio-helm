@@ -8,13 +8,15 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "ghostfolio.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
-        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -28,10 +30,42 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ghostfolio.serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.postgres.enabled .Values.valkey.enabled }}
+      initContainers:
+        - name: wait-for-dependencies
+          image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+          imagePullPolicy: {{ .Values.initImage.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              {{- if .Values.postgres.enabled }}
+              echo "Waiting for PostgreSQL at {{ include "ghostfolio.postgresFullname" . }}:5432..."
+              until nc -z -w 3 {{ include "ghostfolio.postgresFullname" . }} 5432; do
+                echo "PostgreSQL not ready, retrying in 2s..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready."
+              {{- end }}
+              {{- if .Values.valkey.enabled }}
+              echo "Waiting for Valkey at {{ include "ghostfolio.valkeyHost" . }}:{{ .Values.valkey.service.port }}..."
+              until nc -z -w 3 {{ include "ghostfolio.valkeyHost" . }} {{ .Values.valkey.service.port }}; do
+                echo "Valkey not ready, retrying in 2s..."
+                sleep 2
+              done
+              echo "Valkey is ready."
+              {{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -42,15 +76,37 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
-            - secretRef:
+            - configMapRef:
                 name: {{ include "ghostfolio.fullname" . }}
-          {{- with .Values.env }}
           env:
+            {{- if .Values.postgres.enabled }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ghostfolio.postgresSecretName" . }}
+                  key: uri
+            {{- end }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ghostfolio.valkeyPasswordSecretName" . }}
+                  key: {{ include "ghostfolio.valkeyPasswordSecretKey" . }}
+            - name: ACCESS_TOKEN_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ghostfolio.existingSecretName" . }}
+                  key: {{ .Values.ghostfolio.existingSecretKeys.ACCESS_TOKEN_SALT }}
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ghostfolio.existingSecretName" . }}
+                  key: {{ .Values.ghostfolio.existingSecretKeys.JWT_SECRET_KEY }}
+          {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.ghostfolio.PORT }}
               protocol: TCP
           {{- with .Values.livenessProbe }}
           livenessProbe:

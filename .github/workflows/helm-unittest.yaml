@@ -1,0 +1,25 @@
+name: Helm Unittest
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "chart/**"
+      - ".github/workflows/helm-unittest.yaml"
+  pull_request:
+    branches: [master]
+    paths:
+      - "chart/**"
+      - ".github/workflows/helm-unittest.yaml"
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run helm unittest
+        uses: d3adb5/helm-unittest-action@v2.5.0
+        with:
+          charts: chart
