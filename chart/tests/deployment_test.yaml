@@ -182,3 +182,12 @@ tests:
       - notMatchRegex:
           path: spec.template.spec.initContainers[0].command[2]
           pattern: "RELEASE-NAME-postgres"
+
+  - it: has no init container when both postgres and valkey are disabled
+    template: deployment.yaml
+    set:
+      postgres.enabled: false
+      valkey.enabled: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.initContainers
