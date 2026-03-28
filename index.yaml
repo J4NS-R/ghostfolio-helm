@@ -14,6 +14,38 @@ entries:
           email: git@moat.rauten.co.za
     apiVersion: v2
     appVersion: 2.250.0
+    created: "2026-03-28T15:11:19.274796168Z"
+    dependencies:
+    - condition: postgres.enabled
+      name: postgres
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.18.3
+    - condition: valkey.enabled
+      name: valkey
+      repository: https://valkey.io/valkey-helm/
+      version: 0.9.3
+    description: Unofficial Helm chart for Ghostfolio, an open source wealth management
+      software.
+    digest: 396355b68c1ad63dc42b7d34d8725e45f21c6dd2af459d7f6eb4500eb437522e
+    icon: https://avatars.githubusercontent.com/u/82473144
+    name: ghostfolio
+    type: application
+    urls:
+    - https://github.com/J4NS-R/ghostfolio-helm/releases/download/ghostfolio-0.1.0-rc.2/ghostfolio-0.1.0-rc.2.tgz
+    version: 0.1.0-rc.2
+  - annotations:
+      artifacthub.io/alternativeName: ghostfolio-helm
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Chart source
+          url: https://github.com/J4NS-R/ghostfolio-helm
+        - name: Ghostfolio source
+          url: https://github.com/ghostfolio/ghostfolio
+      artifacthub.io/maintainers: |
+        - name: Jans Rautenbach
+          email: git@moat.rauten.co.za
+    apiVersion: v2
+    appVersion: 2.250.0
     created: "2026-03-28T15:04:44.03684215Z"
     dependencies:
     - condition: postgres.enabled
@@ -33,4 +65,4 @@ entries:
     urls:
     - https://github.com/J4NS-R/ghostfolio-helm/releases/download/ghostfolio-0.1.0-rc.1/ghostfolio-0.1.0-rc.1.tgz
     version: 0.1.0-rc.1
-generated: "2026-03-28T15:04:44.036858922Z"
+generated: "2026-03-28T15:11:19.274812859Z"
