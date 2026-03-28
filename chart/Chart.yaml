@@ -35,6 +35,7 @@ type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
 version: 0.1.2
+# Developer note: Remember to update the `artifacthub.io/changes` annotation when bumping this version
 
 # https://github.com/ghostfolio/ghostfolio/releases
 appVersion: "2.250.0"

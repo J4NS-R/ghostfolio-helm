@@ -29,7 +29,7 @@
     {
       "name": "Bump chart version on dependency update",
       "filePatterns": ["{{packageFileDir}}/Chart.yaml"],
-      "matchStrings": ["version:\\s(?<version>[^\\s]+)"],
+      "matchStrings": ["\\nversion:\\s(?<version>[^\\s]+)"],
       "bumpType": "patch"
     }
   ],
