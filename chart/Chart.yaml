@@ -13,9 +13,10 @@ annotations:
   artifacthub.io/maintainers: |
     - name: J4NS-R
       email: git@moat.rauten.co.za
+  # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: added
-      description: Initial release
+      description: Add README to chart package
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
@@ -33,7 +34,7 @@ dependencies:
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.1.2-rc.1
+version: 0.1.2
 
 # https://github.com/ghostfolio/ghostfolio/releases
 appVersion: "2.250.0"
