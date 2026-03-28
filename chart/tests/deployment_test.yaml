@@ -2,7 +2,6 @@ suite: test deployment
 templates:
   - deployment.yaml
   # deployment depends on these
-  - secrets.yaml
   - configmap.yaml
 values:
   - test.values.yaml
@@ -18,30 +17,124 @@ tests:
           path: spec.template.spec.containers[0].image
           value: ghostfolio/ghostfolio:1.2.3
 
+  - it: injects DATABASE_URL from subchart secret when postgres enabled
+    template: deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: RELEASE-NAME-postgres
+                key: uri
+
+  - it: uses postgres.auth.existingSecret for DATABASE_URL when set
+    template: deployment.yaml
+    set:
+      postgres.auth.existingSecret: my-pg-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: my-pg-secret
+                key: uri
+
+  - it: does not inject DATABASE_URL when postgres disabled
+    template: deployment.yaml
+    set:
+      postgres.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+          any: true
+
+  - it: allows inline DATABASE_URL via env when postgres disabled
+    template: deployment.yaml
+    set:
+      postgres.enabled: false
+      env:
+        - name: DATABASE_URL
+          value: "postgresql://user:pass@external-host:5432/mydb"
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: RELEASE-NAME-postgres
+                key: uri
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            value: "postgresql://user:pass@external-host:5432/mydb"
+
+  - it: allows DATABASE_URL from external secret via env when postgres disabled
+    template: deployment.yaml
+    set:
+      postgres.enabled: false
+      env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: my-external-db-secret
+              key: connection-string
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: my-external-db-secret
+                key: connection-string
+
+  - it: uses postgres fullnameOverride for secret name
+    template: deployment.yaml
+    set:
+      postgres.fullnameOverride: custom-pg
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: custom-pg
+                key: uri
+
   - it: uses built-in valkey secret name and default key
     template: deployment.yaml
     asserts:
-      - equal:
-          path: spec.template.spec.containers[0].env[0].name
-          value: REDIS_PASSWORD
-      - equal:
-          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
-          value: valkey-secret
-      - equal:
-          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.key
-          value: default
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: valkey-secret
+                key: default
 
   - it: uses custom passwordSecretKey for built-in valkey
     template: deployment.yaml
     set:
       valkey.passwordSecretKey: my-custom-key
     asserts:
-      - equal:
-          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
-          value: valkey-secret
-      - equal:
-          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.key
-          value: my-custom-key
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: valkey-secret
+                key: my-custom-key
 
   - it: uses external valkey secret name and default key
     template: deployment.yaml
@@ -49,12 +142,14 @@ tests:
       valkey.enabled: false
       externalValkey.existingSecret: my-external-secret
     asserts:
-      - equal:
-          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
-          value: my-external-secret
-      - equal:
-          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.key
-          value: password
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: my-external-secret
+                key: password
 
   - it: uses custom key for external valkey
     template: deployment.yaml
@@ -63,9 +158,11 @@ tests:
       externalValkey.existingSecret: my-external-secret
       externalValkey.existingSecretPasswordKey: redis-pass
     asserts:
-      - equal:
-          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
-          value: my-external-secret
-      - equal:
-          path: spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.key
-          value: redis-pass
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: my-external-secret
+                key: redis-pass

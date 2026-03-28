@@ -15,10 +15,10 @@ annotations:
       email: git@moat.rauten.co.za
 
 dependencies:
-  - name: postgresql
-    version: "16.7.13"
-    repository: "oci://registry-1.docker.io/bitnamicharts"
-    condition: postgresql.enabled
+  - name: postgres
+    version: "0.18.3"
+    repository: "oci://registry-1.docker.io/cloudpirates"
+    condition: postgres.enabled
   - name: valkey
     version: "0.9.3"
     repository: "https://valkey.io/valkey-helm/"

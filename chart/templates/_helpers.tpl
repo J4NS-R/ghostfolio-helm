@@ -62,16 +62,32 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Create the PostgreSQL database URL
+Create the postgres subchart fullname - mirrors the postgres subchart's fullname logic
 */}}
-{{- define "ghostfolio.databaseUrl" -}}
-{{- $fullname := (include "ghostfolio.fullname" .) -}}
-{{ printf "postgresql://%s:%s@%s-postgresql.%s.svc:5432/%s?connect_timeout=300&sslmode=prefer" .Values.postgresql.auth.username .Values.postgresql.auth.password $fullname .Release.Namespace .Values.postgresql.auth.database }}
+{{- define "ghostfolio.postgresFullname" -}}
+{{- if .Values.postgres.fullnameOverride -}}
+{{- .Values.postgres.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default "postgres" .Values.postgres.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
 {{- end }}
 
-
-{{- define "ghostfolio.externalDatabaseUrl" -}}
-{{- printf "postgresql://%s:%s@%s:%d/%s?%s" .Values.externalPostgresql.auth.username .Values.externalPostgresql.auth.password .Values.externalPostgresql.host (.Values.externalPostgresql.port | int) .Values.externalPostgresql.auth.database .Values.externalPostgresql.options }}
+{{/*
+Get the name of the Secret containing the PostgreSQL credentials.
+When postgres.auth.existingSecret is set, the user manages their own secret.
+Otherwise the postgres subchart auto-generates one named after its fullname.
+*/}}
+{{- define "ghostfolio.postgresSecretName" -}}
+{{- if .Values.postgres.auth.existingSecret -}}
+{{- .Values.postgres.auth.existingSecret -}}
+{{- else -}}
+{{- include "ghostfolio.postgresFullname" . -}}
+{{- end -}}
 {{- end }}
 
 {{/*

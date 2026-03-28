@@ -16,7 +16,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
@@ -47,9 +46,14 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "ghostfolio.fullname" . }}
-            - secretRef:
-                name: {{ include "ghostfolio.fullname" . }}
           env:
+            {{- if .Values.postgres.enabled }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ghostfolio.postgresSecretName" . }}
+                  key: uri
+            {{- end }}
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:

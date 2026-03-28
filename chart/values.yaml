@@ -1,10 +1,5 @@
 # Default values for ghostfolio.
-# This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
-global:
-  # Global default StorageClass for Persistent Volume(s) (used for Valkey and/or PostgreSQL)
-  defaultStorageClass: ""
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -30,23 +25,19 @@ ghostfolio:
   # Recommended to change this value to the actual external URL for ghostfolio
   ROOT_URL: "http://0.0.0.0:3333"
 
-# This define the PostgreSQL server configuration that will be deployed using Helm subchart.
-# Set the .enabled key to false to use an external PostgreSQL server.
-# For more information checkout: https://artifacthub.io/packages/helm/bitnami/postgresql
-postgresql:
+# This defines the PostgreSQL server configuration that will be deployed using Helm subchart.
+# For more information checkout: https://github.com/CloudPirates-io/helm-charts/tree/main/charts/postgres
+# To use an external PostgreSQL server, set postgres.enabled=false and add an item under `env` with
+# name=DATABASE_URL and either a `value` or `valueFrom` expression pointing to your connection string.
+postgres:
   enabled: true
   auth:
-    username: ghostfolio-user
-    password: ghostfolio-password
     database: ghostfolio-db
-externalPostgresql:
-  host: postgres
-  port: 5432
-  auth:
-    username: external-ghostfolio-user
-    password: external-ghostfolio-password
-    database: external-ghostfolio-db
-  options: connect_timeout=300&sslmode=prefer
+    username: ghostfolio-user
+    # Name of existing secret for postgres password
+    existingSecret: ""
+    secretKeys:
+      adminPasswordKey: "postgres-password"
 
 # This defines the Valkey server configuration that will be deployed using Helm subchart.
 # Set the .enabled key to false to use an external Valkey/Redis server.
@@ -118,23 +109,6 @@ service:
   type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 3333
-
-# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: ghostfolio.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 # We usually recommend not to specify default resources and to leave this as a conscious
 # choice for the user. This also increases chances charts run on environments with little

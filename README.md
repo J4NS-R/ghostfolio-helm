@@ -51,13 +51,13 @@ Like any other _Helm_ chart, the available configuration options can be found in
       existingSecret: "my-ghostfolio-secret"
       BASE_CURRENCY: EUR # or USD
 
-    # For more information checkout: https://artifacthub.io/packages/helm/bitnami/postgresql
-    postgresql:
+    # For more information checkout: https://github.com/CloudPirates-io/helm-charts/tree/main/charts/postgres
+    postgres:
       enabled: true
       auth:
-        username: ghostfolio-user
-        password: ghostfolio-password
         database: ghostfolio-db
+        username: ghostfolio-user
+        existingSecret: ""
 
     # For more information checkout: https://github.com/valkey-io/valkey-helm
     valkey:
@@ -69,31 +69,30 @@ Like any other _Helm_ chart, the available configuration options can be found in
           default:
             permissions: "~* &* +@all"
       passwordSecretKey: "default"
-
-    ingress:
-      enabled: true
-      hosts:
-        - host: ghostfolio.domain.tld
-          paths:
-            - path: /
-              pathType: ImplementationSpecific
     ```
 
 ### 1.2.1. Use an external PostgreSQL server
 
-By default, the chart deploys a _PostgreSQL_ server via a subchart dependency. However, if want to use your own instance, you can set the following values:
+By default, the chart deploys a _PostgreSQL_ server via a subchart dependency. However, if you want to use your own instance, set `postgres.enabled` to `false` and provide `DATABASE_URL` via the `env` block:
 
 ```yaml
-postgresql:
+postgres:
   enabled: false
-externalPostgresql:
-  host: postgres.domain.tld
-  port: 5432
-  auth:
-    username: external-ghostfolio-user
-    password: external-ghostfolio-password
-    database: external-ghostfolio-db
-  options: connect_timeout=300&sslmode=prefer
+
+env:
+  - name: DATABASE_URL
+    value: "postgresql://user:password@postgres.domain.tld:5432/ghostfolio-db?connect_timeout=300&sslmode=prefer"
+```
+
+You can also reference an existing _Kubernetes_ Secret instead of inlining the connection string:
+
+```yaml
+env:
+  - name: DATABASE_URL
+    valueFrom:
+      secretKeyRef:
+        name: my-external-pg-secret
+        key: uri
 ```
 
 ### 1.2.2. Use an external Valkey server
