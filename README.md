@@ -14,20 +14,7 @@ This project provides a _Helm_ chart for deploying **[Ghostfolio: the Open Sourc
 
 The charts are built and then published to these project _GitHub Pages_, allowing anyone to quickly deploy and test the application.
 
-<!-- omit in toc -->
-## Table of content
-
-- [Ghostfolio Helm Chart](#ghostfolio-helm-chart)
-  - [1.1. Prerequisite](#11-prerequisite)
-  - [1.3. Install the application](#13-install-the-application)
-    - [1.3.1. Add the GitHub Helm repository (optional)](#131-add-the-github-helm-repository-optional)
-    - [1.3.2. Install the chart](#132-install-the-chart)
-      - [1.3.2.1. Install a specific version of Ghostfolio](#1321-install-a-specific-version-of-ghostfolio)
-    - [1.3.3. Verify the deployment](#133-verify-the-deployment)
-  - [1.4. Uninstall the application](#14-uninstall-the-application)
-  - [1.5. License](#15-license)
-
-## 1.1. Prerequisite
+## 1.1. Prerequisites
 
 - A **Kubernetes** cluster,
 - A **PostgreSQL** server (optional),
@@ -79,12 +66,12 @@ If you want to install a specific version of _Ghostfolio_, you must define the `
 ### 1.3.3. Verify the deployment
 
 ```bash
-kubectl get all -l app.kubernetes.io/instance=ghostfolio
+kubectl get all -l app.kubernetes.io/instance=ghostfolio -n <namespace>
+# Once all pods are up:
+helm test ghostfolio -n <namespace>
 ```
 
 Replace <namespace> with your target namespace if you specified one.
-
-<p align="right"><a href="#ghostfolio-helm-chart">back to top</a></p>
 
 ## 1.4. Uninstall the application
 
@@ -113,10 +100,12 @@ helm uninstall ghostfolio -n <namespace>
 kubectl get all -n <namespace> -l app=ghostfolio
 ```
 
-<p align="right"><a href="#ghostfolio-helm-chart">back to top</a></p>
-
 ## 1.5. License
 
 Distributed under the Apache 2.0 License. See `LICENSE` for more information.
 
 <p align="right"><a href="#ghostfolio-helm-chart">back to top</a></p>
+
+## 1.6. Contributing
+
+PR's welcome. See `CONTRIBUTING.md`

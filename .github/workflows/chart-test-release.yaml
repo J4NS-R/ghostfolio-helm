@@ -63,6 +63,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Guard against stable release from release branch
+        if: startsWith(github.ref, 'refs/heads/release/')
+        run: |
+          version=$(grep '^version:' chart/Chart.yaml | awk '{print $2}')
+          if [[ "$version" != *-* ]]; then
+            echo "::error::Stable version '$version' not allowed on a release branch. Use a pre-release version (e.g. 1.0.0-rc.1)."
+            exit 1
+          fi
+
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
