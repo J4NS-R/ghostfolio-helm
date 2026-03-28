@@ -8,13 +8,8 @@
 .pages
 
 # IDE's
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
-.idea/
+/.vscode/
+/.idea/
 .history/
 *.vsix
 .history
@@ -22,7 +17,7 @@
 
 # Agents
 .opencode/
-docs/superpowers/
+/docs/superpowers/
 
 # env files
 .env
