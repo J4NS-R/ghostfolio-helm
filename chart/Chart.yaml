@@ -11,8 +11,11 @@ annotations:
     - name: Ghostfolio source
       url: https://github.com/ghostfolio/ghostfolio
   artifacthub.io/maintainers: |
-    - name: Jans Rautenbach
+    - name: J4NS-R
       email: git@moat.rauten.co.za
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial release
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
@@ -29,8 +32,8 @@ dependencies:
 
 type: application
 
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.0
+# Versions follow Semantic Versioning (https://semver.org/)
+version: 0.1.1
 
 # https://github.com/ghostfolio/ghostfolio/releases
 appVersion: "2.250.0"
