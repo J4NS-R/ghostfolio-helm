@@ -188,6 +188,7 @@ tests:
     set:
       postgres.enabled: false
       valkey.enabled: false
+      externalValkey.existingSecret: my-valkey-secret
     asserts:
       - notExists:
           path: spec.template.spec.initContainers
@@ -248,3 +249,28 @@ tests:
       - matchRegex:
           path: spec.template.spec.initContainers[0].command[2]
           pattern: "6380"
+
+  - it: fails when built-in valkey secret name is empty
+    template: deployment.yaml
+    set:
+      valkey.auth.usersExistingSecret: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: "valkey.auth.usersExistingSecret is required when valkey.enabled=true — set it to the name of the Secret containing the Valkey password"
+
+  - it: fails when external valkey secret name is empty
+    template: deployment.yaml
+    set:
+      valkey.enabled: false
+      externalValkey.existingSecret: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: "externalValkey.existingSecret is required when valkey.enabled=false — set it to the name of the Secret containing the Redis/Valkey password"
+
+  - it: fails when ghostfolio existingSecret is empty
+    template: deployment.yaml
+    set:
+      ghostfolio.existingSecret: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: "ghostfolio.existingSecret is required — set it to the name of the Secret containing ACCESS_TOKEN_SALT and JWT_SECRET_KEY"

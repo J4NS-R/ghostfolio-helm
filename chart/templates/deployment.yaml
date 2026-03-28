@@ -30,7 +30,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ghostfolio.serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -95,12 +94,12 @@ spec:
             - name: ACCESS_TOKEN_SALT
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.ghostfolio.existingSecret }}
+                  name: {{ include "ghostfolio.existingSecretName" . }}
                   key: {{ .Values.ghostfolio.existingSecretKeys.ACCESS_TOKEN_SALT }}
             - name: JWT_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.ghostfolio.existingSecret }}
+                  name: {{ include "ghostfolio.existingSecretName" . }}
                   key: {{ .Values.ghostfolio.existingSecretKeys.JWT_SECRET_KEY }}
           {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}

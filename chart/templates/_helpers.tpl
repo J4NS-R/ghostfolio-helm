@@ -51,17 +51,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use
-*/}}
-{{- define "ghostfolio.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "ghostfolio.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
-
-{{/*
 Create the postgres subchart fullname - mirrors the postgres subchart's fullname logic
 */}}
 {{- define "ghostfolio.postgresFullname" -}}
@@ -111,9 +100,9 @@ Get the name of the Secret containing the Valkey password
 */}}
 {{- define "ghostfolio.valkeyPasswordSecretName" -}}
 {{- if .Values.valkey.enabled -}}
-{{ .Values.valkey.auth.usersExistingSecret }}
+{{ required "valkey.auth.usersExistingSecret is required when valkey.enabled=true — set it to the name of the Secret containing the Valkey password" .Values.valkey.auth.usersExistingSecret }}
 {{- else -}}
-{{ .Values.externalValkey.existingSecret }}
+{{ required "externalValkey.existingSecret is required when valkey.enabled=false — set it to the name of the Secret containing the Redis/Valkey password" .Values.externalValkey.existingSecret }}
 {{- end -}}
 {{- end }}
 
@@ -126,4 +115,11 @@ Get the key within the Secret that holds the Valkey password
 {{- else -}}
 {{ .Values.externalValkey.existingSecretPasswordKey | default "password" }}
 {{- end -}}
+{{- end }}
+
+{{/*
+Get the name of the Secret containing ACCESS_TOKEN_SALT and JWT_SECRET_KEY
+*/}}
+{{- define "ghostfolio.existingSecretName" -}}
+{{ required "ghostfolio.existingSecret is required — set it to the name of the Secret containing ACCESS_TOKEN_SALT and JWT_SECRET_KEY" .Values.ghostfolio.existingSecret }}
 {{- end }}
