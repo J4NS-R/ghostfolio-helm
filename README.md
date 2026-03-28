@@ -44,6 +44,8 @@ To deploy the application using Helm, follow these steps:
 ```bash
 helm repo add ghostfolio https://j4ns-r.github.io/ghostfolio-helm/
 helm repo update
+# list versions
+helm search repo --versions ghostfolio
 ```
 
 ### 1.3.2. Install the chart

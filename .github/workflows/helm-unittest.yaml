@@ -40,6 +40,9 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Setup helm repos
+        run: helm repo add valkey https://valkey.io/valkey-helm/
+
       - name: Install chart-testing
         uses: helm/chart-testing-action@v2.8.0
 
