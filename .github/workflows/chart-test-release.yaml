@@ -83,8 +83,10 @@ jobs:
       - name: Add dependency repos
         run: helm repo add valkey https://valkey.io/valkey-helm/
 
-      - name: Build dependencies
-        run: helm dependency build chart
+      - name: Build dependencies and prep release
+        run: |
+          helm dependency build chart
+          cp README.md LICENSE chart/
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
