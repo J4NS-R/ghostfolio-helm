@@ -1,0 +1,38 @@
+suite: test service
+templates:
+  - service.yaml
+values:
+  - test.values.yaml
+chart:
+  appVersion: 1.2.3
+tests:
+  - it: is a Service
+    template: service.yaml
+    asserts:
+      - isKind:
+          of: Service
+
+  - it: uses default service port
+    template: service.yaml
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 80
+
+  - it: service port can be overridden
+    template: service.yaml
+    set:
+      service.port: 8080
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 8080
+
+  - it: service type can be overridden
+    template: service.yaml
+    set:
+      service.type: LoadBalancer
+    asserts:
+      - equal:
+          path: spec.type
+          value: "LoadBalancer"
