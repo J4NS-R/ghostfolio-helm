@@ -6,6 +6,8 @@
 
   // Check for updates daily
   "schedule": ["at any time"],
+  "prHourlyLimit": 5,
+  "prConcurrentLimit": 0,  // no limit to number of PR's that can be open at the same time
 
   // Track Ghostfolio releases via the appVersion field in Chart.yaml
   "customManagers": [
@@ -33,5 +35,10 @@
   ],
 
   // Keep subchart archives in charts/ in sync
-  "postUpdateOptions": ["helmUpdateSubChartArchives"]
+  "postUpdateOptions": ["helmUpdateSubChartArchives"],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "labels": ["renovate"],
+  "dependencyDashboardLabels": ["renovate"]
 }
