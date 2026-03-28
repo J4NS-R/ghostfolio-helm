@@ -1,4 +1,4 @@
-name: Chart Test & Release
+name: Chart Test and Release
 
 on:
   push:
