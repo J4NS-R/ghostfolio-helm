@@ -14,7 +14,7 @@
     {
       "customType": "regex",
       "description": "Track Ghostfolio GitHub releases in chart appVersion",
-      "managerFilePatterns": ["chart/Chart\\.yaml$"],
+      "managerFilePatterns": ["chart/Chart.yaml"],
       "matchStrings": [
         "appVersion:\\s*\"?(?<currentValue>[\\d\\.]+)\"?"
       ],
@@ -28,7 +28,7 @@
   "bumpVersions": [
     {
       "name": "Bump chart version on dependency update",
-      "filePatterns": ["{{packageFileDir}}/Chart.{yaml,yml}"],
+      "filePatterns": ["{{packageFileDir}}/Chart.yaml"],
       "matchStrings": ["version:\\s(?<version>[^\\s]+)"],
       "bumpType": "patch"
     }
@@ -36,9 +36,6 @@
 
   // Keep subchart archives in charts/ in sync
   "postUpdateOptions": ["helmUpdateSubChartArchives"],
-  "lockFileMaintenance": {
-    "enabled": true
-  },
   "labels": ["renovate"],
   "dependencyDashboardLabels": ["renovate"]
 }
