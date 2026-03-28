@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+
+  // Check for updates daily
+  "schedule": ["at any time"],
+
+  // Track Ghostfolio releases via the appVersion field in Chart.yaml
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Track Ghostfolio GitHub releases in chart appVersion",
+      "managerFilePatterns": ["chart/Chart\\.yaml$"],
+      "matchStrings": [
+        "appVersion:\\s*\"?(?<currentValue>[\\d\\.]+)\"?"
+      ],
+      "depNameTemplate": "ghostfolio/ghostfolio",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    }
+  ],
+
+  // Bump chart version when any dependency is updated
+  "bumpVersions": [
+    {
+      "name": "Bump chart version on dependency update",
+      "filePatterns": ["{{packageFileDir}}/Chart.{yaml,yml}"],
+      "matchStrings": ["version:\\s(?<version>[^\\s]+)"],
+      "bumpType": "patch"
+    }
+  ],
+
+  // Keep subchart archives in charts/ in sync
+  "postUpdateOptions": ["helmUpdateSubChartArchives"]
+}
