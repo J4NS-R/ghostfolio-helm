@@ -1,0 +1,71 @@
+suite: test configmap
+templates:
+  - configmap.yaml
+values:
+  - test.values.yaml
+chart:
+  appVersion: 1.2.3
+tests:
+  - it: uses built-in valkey host for REDIS_HOST
+    template: configmap.yaml
+    asserts:
+      - equal:
+          path: data.REDIS_HOST
+          value: "RELEASE-NAME-valkey"
+
+  - it: uses valkey service port for REDIS_PORT
+    template: configmap.yaml
+    asserts:
+      - equal:
+          path: data.REDIS_PORT
+          value: "6379"
+
+  - it: uses ghostfolio.BASE_CURRENCY value
+    template: configmap.yaml
+    set:
+      ghostfolio.BASE_CURRENCY: USD
+    asserts:
+      - equal:
+          path: data.BASE_CURRENCY
+          value: "USD"
+
+  - it: uses ghostfolio.PORT value
+    template: configmap.yaml
+    set:
+      ghostfolio.PORT: 4567
+    asserts:
+      - equal:
+          path: data.PORT
+          value: "4567"
+
+  - it: uses ghostfolio.ROOT_URL value
+    template: configmap.yaml
+    set:
+      ghostfolio.ROOT_URL: "https://ghostfolio.example.com"
+    asserts:
+      - equal:
+          path: data.ROOT_URL
+          value: "https://ghostfolio.example.com"
+
+  - it: uses externalValkey host and port when valkey disabled
+    template: configmap.yaml
+    set:
+      valkey.enabled: false
+      externalValkey.host: my-redis
+      externalValkey.port: 6380
+    asserts:
+      - equal:
+          path: data.REDIS_HOST
+          value: "my-redis"
+      - equal:
+          path: data.REDIS_PORT
+          value: "6380"
+
+  - it: uses valkey fullnameOverride for REDIS_HOST
+    template: configmap.yaml
+    set:
+      valkey.fullnameOverride: custom-valkey
+    asserts:
+      - equal:
+          path: data.REDIS_HOST
+          value: "custom-valkey"
