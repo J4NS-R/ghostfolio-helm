@@ -12,6 +12,12 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
+# Init container image used to wait for dependencies (Postgres, Valkey) before starting Ghostfolio.
+initImage:
+  repository: busybox
+  tag: "1.37"
+  pullPolicy: IfNotPresent
+
 # This defines the Ghostfolio configuration
 ghostfolio:
   # Name of an existing Secret containing ACCESS_TOKEN_SALT and JWT_SECRET_KEY.
@@ -60,6 +66,8 @@ valkey:
   # Key within the existing Secret that holds the password for Ghostfolio to connect.
   # This is used to inject REDIS_PASSWORD into the Ghostfolio deployment.
   passwordSecretKey: "default"
+  service:
+    port: 6379
 externalValkey:
   host: "redis"
   port: 6379

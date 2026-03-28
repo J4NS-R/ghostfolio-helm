@@ -156,3 +156,29 @@ tests:
               secretKeyRef:
                 name: my-external-secret
                 key: redis-pass
+
+  - it: has init container that waits for postgres and valkey
+    template: deployment.yaml
+    asserts:
+      - exists:
+          path: spec.template.spec.initContainers
+      - lengthEqual:
+          path: spec.template.spec.initContainers
+          count: 1
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: wait-for-dependencies
+
+  - it: init container waits only for valkey when postgres disabled
+    template: deployment.yaml
+    set:
+      postgres.enabled: false
+    asserts:
+      - exists:
+          path: spec.template.spec.initContainers
+      - matchRegex:
+          path: spec.template.spec.initContainers[0].command[2]
+          pattern: "RELEASE-NAME-valkey"
+      - notMatchRegex:
+          path: spec.template.spec.initContainers[0].command[2]
+          pattern: "RELEASE-NAME-postgres"

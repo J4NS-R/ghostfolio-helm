@@ -35,6 +35,40 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        - name: wait-for-dependencies
+          image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+          imagePullPolicy: {{ .Values.initImage.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              {{- if .Values.postgres.enabled }}
+              echo "Waiting for PostgreSQL at {{ include "ghostfolio.postgresFullname" . }}:5432..."
+              until nc -z {{ include "ghostfolio.postgresFullname" . }} 5432; do
+                echo "PostgreSQL not ready, retrying in 2s..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready."
+              {{- end }}
+              {{- if .Values.valkey.enabled }}
+              echo "Waiting for Valkey at {{ include "ghostfolio.valkeyHost" . }}:{{ .Values.valkey.service.port }}..."
+              until nc -z {{ include "ghostfolio.valkeyHost" . }} {{ .Values.valkey.service.port }}; do
+                echo "Valkey not ready, retrying in 2s..."
+                sleep 2
+              done
+              echo "Valkey is ready."
+              {{- end }}
+              {{- if not (or .Values.postgres.enabled .Values.valkey.enabled) }}
+              echo "No built-in dependencies to wait for."
+              {{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
