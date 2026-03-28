@@ -28,3 +28,4 @@
 .ionide
 # Agents
 .opencode/
+.env
