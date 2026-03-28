@@ -201,3 +201,24 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].ports[0].containerPort
           value: 4444
+
+  - it: uses /api/health for liveness probe by default
+    template: deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /api/health
+
+  - it: uses /api/health for readiness probe by default
+    template: deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /api/health
+
+  - it: uses /api/health for startup probe by default
+    template: deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.httpGet.path
+          value: /api/health
