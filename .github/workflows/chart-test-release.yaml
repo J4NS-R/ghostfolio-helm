@@ -14,6 +14,10 @@ on:
       - "chart/**"
       - ".github/workflows/chart-test-release.yaml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   unittest:
     runs-on: ubuntu-latest
