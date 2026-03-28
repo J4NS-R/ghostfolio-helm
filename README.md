@@ -121,7 +121,7 @@ kubectl create secret generic my-valkey-secret --from-literal=password=my-secret
 
 To deploy the application using Helm, follow these steps:
 
-### 1.3.1. Add the GitHub Helm repository (optional)
+### 1.3.1. Add the GitHub Helm repository
 
 ```bash
 helm repo add ghostfolio https://j4ns-r.github.io/ghostfolio-helm/
@@ -130,28 +130,36 @@ helm repo update
 
 ### 1.3.2. Install the chart
 
-```bash
-helm upgrade --install ghostfolio ghostfolio/ghostfolio -f ghostfolio.values.yaml
+First, create one or more secrets for the ghostfolio app. See expected keys below. Secret values can be almost any string. Example: `openssl rand -hex 24`.
+
+Create a values file configuring the chart:
+
+```yaml
+ghostfolio:
+  existingSecret: gf-secret # keys: JWT_SECRET_KEY, ACCESS_TOKEN_SALT
+  ROOT_URL: "http://ghostfolio.ghostfolio.svc.cluster.local"
+
+valkey:
+  auth:
+    usersExistingSecret: valkey-secret  # key: default
+
+postgres:
+  auth:
+    existingSecret: pg-secret  # key: postgres-password
 ```
 
-You can also install the chart directly from sources:
-
 ```bash
-helm upgrade --install ghostfolio charts/ghostfolio -f ghostfolio.values.yaml
+helm upgrade --install ghostfolio ghostfolio/ghostfolio -f values.yaml
 ```
 
 #### 1.3.2.1. Install a specific version of Ghostfolio
 
-If you want to install a specific version of _Ghostfolio_, you must define the `.image.tag` key in the `values.yaml` file or directly inline:
-
-```bash
-helm upgrade --install --set "image.tag=2.163.0" ghostfolio ghostfolio/ghostfolio
-```
+If you want to install a specific version of _Ghostfolio_, you must define the `.image.tag` key in the `values.yaml`.
 
 ### 1.3.3. Verify the deployment
 
 ```bash
-kubectl get all -l app=ghostfolio
+kubectl get all -l app.kubernetes.io/instance=ghostfolio
 ```
 
 Replace <namespace> with your target namespace if you specified one.
