@@ -35,7 +35,7 @@ This chart is opinionated in the following ways:
 #### Stable releases
 
 1. Bump `version` in `chart/Chart.yaml` (e.g. `0.2.0`).
-2. Merge to `master`. The [release workflow](.github/workflows/release.yaml) detects the version change, packages the chart, creates a GitHub Release, and updates the Helm repo index on GitHub Pages.
+2. Merge to `master`. The [release workflow](.github/workflows/chart-test-release.yaml) detects the version change, packages the chart, creates a GitHub Release, and updates the Helm repo index on GitHub Pages.
 
 #### Pre-releases
 

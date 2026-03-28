@@ -1,0 +1,86 @@
+name: Chart Test & Release
+
+on:
+  push:
+    branches:
+      - master
+      - "release/*"
+    paths:
+      - "chart/**"
+      - ".github/workflows/chart-test-release.yaml"
+  pull_request:
+    branches: [master]
+    paths:
+      - "chart/**"
+      - ".github/workflows/chart-test-release.yaml"
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run helm unittest
+        uses: d3adb5/helm-unittest-action@v2.5.0
+        with:
+          charts: chart
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Add dependency repos
+        run: helm repo add valkey https://valkey.io/valkey-helm/
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install chart-testing
+        uses: helm/chart-testing-action@v2.8.0
+
+      - name: Lint chart
+        run: ct lint --target-branch master --charts chart
+
+  release:
+    needs: [unittest, lint]
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Add dependency repos
+        run: helm repo add valkey https://valkey.io/valkey-helm/
+
+      - name: Build dependencies
+        run: helm dependency build chart
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: "."
+          mark_as_latest: ${{ github.ref == 'refs/heads/master' }}
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
