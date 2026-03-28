@@ -1,4 +1,4 @@
-
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/ghostfolio-unofficial)](https://artifacthub.io/packages/search?repo=ghostfolio-unofficial)
 [![Latest Tag](https://img.shields.io/github/v/tag/J4NS-R/ghostfolio-helm)](https://github.com/J4NS-R/ghostfolio-helm/tags)
 [![Project License](https://img.shields.io/github/license/J4NS-R/ghostfolio-helm)](https://github.com/J4NS-R/ghostfolio-helm/blob/master/LICENSE)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/J4NS-R/ghostfolio-helm)](https://github.com/J4NS-R/ghostfolio-helm/commits/master/)
