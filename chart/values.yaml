@@ -34,7 +34,11 @@ postgres:
   auth:
     database: ghostfolio-db
     username: ghostfolio-user
-    # Name of existing secret for postgres password
+    # Name of existing secret for postgres password.
+    # IMPORTANT: When set, this Secret MUST also contain a key named 'uri' with the
+    # full PostgreSQL connection string (e.g. postgresql://user:pass@host:5432/db).
+    # The built-in postgres subchart generates this key automatically; when providing
+    # your own Secret you must include it yourself.
     existingSecret: ""
     secretKeys:
       adminPasswordKey: "postgres-password"
