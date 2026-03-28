@@ -26,21 +26,7 @@ tests:
             name: DATABASE_URL
             valueFrom:
               secretKeyRef:
-                name: RELEASE-NAME-postgres
-                key: uri
-
-  - it: uses postgres.auth.existingSecret for DATABASE_URL when set
-    template: deployment.yaml
-    set:
-      postgres.auth.existingSecret: my-pg-secret
-    asserts:
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: DATABASE_URL
-            valueFrom:
-              secretKeyRef:
-                name: my-pg-secret
+                name: pg-secret
                 key: uri
 
   - it: does not inject DATABASE_URL when postgres disabled
@@ -99,7 +85,11 @@ tests:
   - it: uses postgres fullnameOverride for secret name
     template: deployment.yaml
     set:
-      postgres.fullnameOverride: custom-pg
+      postgres:
+        fullnameOverride: custom-pg
+        auth:
+          existingSecret: ""
+          password: "hunter2"
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env

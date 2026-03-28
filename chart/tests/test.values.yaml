@@ -4,3 +4,7 @@ ghostfolio:
 valkey:
   auth:
     usersExistingSecret: valkey-secret
+
+postgres:
+  auth:
+    existingSecret: pg-secret
