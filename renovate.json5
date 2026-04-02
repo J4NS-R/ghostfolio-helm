@@ -9,7 +9,7 @@
   "prHourlyLimit": 5,
   "prConcurrentLimit": 0,  // no limit to number of PR's that can be open at the same time
 
-  // Track Ghostfolio releases via the appVersion field in Chart.yaml
+  // Track Ghostfolio releases via the appVersion field and artifacthub.io/changes annotation in Chart.yaml
   "customManagers": [
     {
       "customType": "regex",
@@ -17,6 +17,17 @@
       "managerFilePatterns": ["chart/Chart.yaml"],
       "matchStrings": [
         "appVersion:\\s*\"?(?<currentValue>[\\d\\.]+)\"?"
+      ],
+      "depNameTemplate": "ghostfolio/ghostfolio",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Ghostfolio GitHub releases in artifacthub.io/changes annotation",
+      "managerFilePatterns": ["chart/Chart.yaml"],
+      "matchStrings": [
+        "description: Bump ghostfolio image to v(?<currentValue>[\\d\\.]+)"
       ],
       "depNameTemplate": "ghostfolio/ghostfolio",
       "datasourceTemplate": "github-releases",
