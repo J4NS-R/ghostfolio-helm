@@ -16,7 +16,7 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: added
-      description: Bump ghostfolio image to v2.252.0
+      description: Bump ghostfolio image to v2.253.0
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
@@ -34,7 +34,7 @@ dependencies:
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.1.4
+version: 0.1.5
 
 # https://github.com/ghostfolio/ghostfolio/releases
-appVersion: "2.252.0"
+appVersion: "2.253.0"
