@@ -15,8 +15,10 @@ annotations:
       email: git@moat.rauten.co.za
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
+    - kind: changed
+      description: Default postgres subchart values to use more intuitive 'customUser' field
     - kind: added
-      description: Bump postgres subchart to v0.19.0
+      description: POSTGRES_* env vars will now be added to the deployment by default and the DATABASE_URL will be constructed automatically
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
@@ -34,7 +36,7 @@ dependencies:
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.1.6
+version: 0.2.0
 
 # https://github.com/ghostfolio/ghostfolio/releases
 appVersion: "2.253.0"

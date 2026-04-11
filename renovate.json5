@@ -47,6 +47,13 @@
 
   // Keep subchart archives in charts/ in sync
   "postUpdateOptions": ["helmUpdateSubChartArchives"],
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["cloudpirates/postgres"],
+      "commitMessageTopic": "Helm chart {{depName}}",
+    }
+  ],
   "labels": ["renovate"],
   "dependencyDashboardLabels": ["renovate"]
 }

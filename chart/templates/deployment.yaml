@@ -80,11 +80,46 @@ spec:
                 name: {{ include "ghostfolio.fullname" . }}
           env:
             {{- if .Values.postgres.enabled }}
+            {{- if (include "ghostfolio.postgresAuthMode" .) }}
+            {{- $postgresSecretName := include "ghostfolio.postgresSecretName" . }}
+            {{- $postgresUserValue := include "ghostfolio.postgresUserValue" . }}
+            {{- $postgresUserSecretKey := include "ghostfolio.postgresUserSecretKey" . }}
+            {{- $postgresDbValue := include "ghostfolio.postgresDbValue" . }}
+            {{- $postgresDbSecretKey := include "ghostfolio.postgresDbSecretKey" . }}
+            {{- if $postgresUserSecretKey }}
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $postgresSecretName }}
+                  key: {{ $postgresUserSecretKey }}
+            {{- else }}
+            - name: POSTGRES_USER
+              value: {{ $postgresUserValue }}
+            {{- end }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $postgresSecretName }}
+                  key: {{ include "ghostfolio.postgresPasswordSecretKey" . }}
+            {{- if $postgresDbSecretKey }}
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $postgresSecretName }}
+                  key: {{ $postgresDbSecretKey }}
+            {{- else }}
+            - name: POSTGRES_DB
+              value: {{ $postgresDbValue }}
+            {{- end }}
+            - name: DATABASE_URL
+              value: {{ printf "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@%s:5432/${POSTGRES_DB}?connect_timeout=300&sslmode=prefer" (include "ghostfolio.postgresFullname" .) | quote }}
+            {{- else }}
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: {{ include "ghostfolio.postgresSecretName" . }}
                   key: uri
+            {{- end }}
             {{- end }}
             - name: REDIS_PASSWORD
               valueFrom:
