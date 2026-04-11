@@ -15,8 +15,8 @@ annotations:
       email: git@moat.rauten.co.za
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Improved CI/CD and documentation
+    - kind: added
+      description: Bump ghostfolio image to v2.254.0
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
