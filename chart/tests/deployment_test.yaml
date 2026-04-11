@@ -82,6 +82,20 @@ tests:
                 name: my-external-db-secret
                 key: connection-string
 
+  - it: uses custom auth.existingSecret for DATABASE_URL
+    template: deployment.yaml
+    set:
+      postgres.auth.existingSecret: my-custom-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: my-custom-secret
+                key: uri
+
   - it: uses postgres fullnameOverride for secret name
     template: deployment.yaml
     set:
@@ -89,7 +103,6 @@ tests:
         fullnameOverride: custom-pg
         auth:
           existingSecret: ""
-          password: "hunter2"
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env

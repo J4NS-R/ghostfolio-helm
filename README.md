@@ -5,19 +5,9 @@
 [![GitHub Commit Activity](https://img.shields.io/github/commit-activity/m/J4NS-R/ghostfolio-helm)](https://github.com/J4NS-R/ghostfolio-helm/commits/master/)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-ghostfolio--helm-lightgrey)](https://github.com/J4NS-R/ghostfolio-helm)
 
-![Ghostfolio Helm banner](docs/ghostfolio-helm-banner.png)
-
 # Unofficial Ghostfolio Helm Chart
 
 This project provides a _Helm_ chart for deploying **[Ghostfolio: the Open Source Wealth Management Software](https://github.com/ghostfolio/ghostfolio)** into any _Kubernetes_ cluster. It integrates the official _Docker_ images built by the _Ghostfolio_ team and hosted on _[DockerHub](https://hub.docker.com/r/ghostfolio/ghostfolio)_. It also includes PostgreSQL and [Valkey](https://github.com/valkey-io/valkey-helm) as optional subcharts.
-
-## 0. This is an opinionated fork
-
-This fork has several breaking changes from the [upstream repo](https://github.com/ByTheHugo/ghostfolio-helm)
-
-- Official **Valkey** chart instead of Redis
-- Cloudpirates **PostgreSQL** chart instead of Bitnami
-- Removed ingress and secrets as out of scope
 
 ## 1. Installation
 
@@ -50,20 +40,20 @@ Create a values file configuring the chart:
 #   tag: 1.2.3
 
 ghostfolio:
-  existingSecret: gf-secret # keys: JWT_SECRET_KEY, ACCESS_TOKEN_SALT
+  existingSecret: gf-secret # required keys: JWT_SECRET_KEY, ACCESS_TOKEN_SALT
   ROOT_URL: "http://ghostfolio.ghostfolio.svc.cluster.local"
 
 valkey:
   auth:
-    usersExistingSecret: valkey-secret  # key: default
+    usersExistingSecret: valkey-secret  # required key: default
 
 postgres:
   auth:
-    existingSecret: pg-secret  # keys: postgres-password, uri
+    existingSecret: pg-secret  # required keys: postgres-password, uri
 ```
 
 ```bash
-helm upgrade --install ghostfolio ghostfolio/ghostfolio -f values.yaml
+helm upgrade --install ghostfolio ghostfolio/ghostfolio -f values.yaml -n <namespace>
 ```
 
 ### Verify the deployment

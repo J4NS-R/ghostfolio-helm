@@ -15,8 +15,8 @@ annotations:
       email: git@moat.rauten.co.za
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
-    - kind: added
-      description: Bump postgres subchart to v0.19.0
+    - kind: fixed
+      description: Improved CI/CD and documentation
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
@@ -34,7 +34,7 @@ dependencies:
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.1.6
+version: 0.1.7
 
 # https://github.com/ghostfolio/ghostfolio/releases
 appVersion: "2.253.0"
