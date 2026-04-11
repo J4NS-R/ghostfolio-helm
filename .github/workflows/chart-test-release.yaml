@@ -49,9 +49,10 @@ jobs:
         uses: helm/chart-testing-action@v2.8.0
 
       - name: Lint chart
-        run: ct lint --target-branch master --charts chart
+        run: ct lint --target-branch master --charts chart --helm-lint-extra-args '-f chart/tests/test.values.yaml'
 
   test-in-minikube:
+    needs: [unittest, lint]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -61,10 +62,15 @@ jobs:
         id: minikube
         uses: medyagh/setup-minikube@v0.0.21
 
-      - name: Try the cluster!
+      - name: Install the chart using test values
         run: |
-          kubectl get pods -A
-          helm --version
+          helm repo add valkey https://valkey.io/valkey-helm/
+          kubectl create secret generic gf-secret --from-literal=JWT_SECRET_KEY=$(openssl rand -hex 24) --from-literal=ACCESS_TOKEN_SALT=$(openssl rand -hex 24)
+          kubectl create secret generic valkey-secret --from-literal=default=$(openssl rand -hex 24)
+          kubectl create secret generic pg-secret --from-literal=postgres-password=$(openssl rand -hex 24)
+          helm dependency build chart
+          helm upgrade --install ghostfolio chart -f chart/tests/test.values.yaml
+          kubectl wait --for=condition=Ready pods -l app.kubernetes.io/instance=ghostfolio --timeout=300s
 
   release:
     needs: [unittest, lint, test-in-minikube]

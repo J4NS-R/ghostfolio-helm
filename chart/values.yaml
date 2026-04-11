@@ -40,11 +40,11 @@ postgres:
   customUser:
     name: ghostfolio-user
     database: ghostfolio-db
-    existingSecret: "" # required
+    existingSecret: ""  # required
     secretKeys:
-      password: "postgres-password" # required key in secret
-      name: "" # will use literal 'ghostfolio-user'
-      database: "" # will use literal 'ghostfolio-db'
+      password: "postgres-password"  # required key in secret
+      name: ""  # will use literal 'ghostfolio-user'
+      database: ""  # will use literal 'ghostfolio-db'
 
 # This defines the Valkey server configuration that will be deployed using Helm subchart.
 # Set the .enabled key to false to use an external Valkey/Redis server.
