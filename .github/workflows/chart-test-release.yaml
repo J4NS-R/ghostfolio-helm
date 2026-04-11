@@ -76,7 +76,8 @@ jobs:
       - name: Confirm ghostfolio is running
         run: |
           kubectl port-forward svc/ghostfolio 3333:80 &
-          curl -Ssf localhost:3333/en | cat | head
+          sleep 8
+          curl -Ssf localhost:3333/en
 
   release:
     needs: [unittest, lint, test-in-minikube]
