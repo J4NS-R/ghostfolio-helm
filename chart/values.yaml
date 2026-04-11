@@ -35,14 +35,16 @@ ghostfolio:
 # For more information checkout: https://github.com/CloudPirates-io/helm-charts/tree/main/charts/postgres
 # To use an external PostgreSQL server, set postgres.enabled=false and add an item under `env` with
 # name=DATABASE_URL and either a `value` or `valueFrom` expression pointing to your connection string.
-# IMPORTANT: When postgres.enabled=true, the Secret referenced by auth.existingSecret (or the auto-generated
-# one) MUST contain a key named 'uri' with the full PostgreSQL connection string
-# (e.g. postgresql://user:pass@host:5432/db).
 postgres:
   enabled: true
   auth:
-    username: ghostfolio-user
     database: ghostfolio-db
+    username: ghostfolio-user
+    # Name of existing secret for postgres password.
+    # IMPORTANT: When set, this Secret MUST also contain a key named 'uri' with the
+    # full PostgreSQL connection string (e.g. postgresql://user:pass@host:5432/db).
+    # The built-in postgres subchart generates this key automatically; when providing
+    # your own Secret you must include it yourself.
     existingSecret: ""
     secretKeys:
       adminPasswordKey: "postgres-password"
