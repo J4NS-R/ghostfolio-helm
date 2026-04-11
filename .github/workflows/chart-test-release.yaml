@@ -51,8 +51,23 @@ jobs:
       - name: Lint chart
         run: ct lint --target-branch master --charts chart
 
+  test-in-minikube:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@v0.0.21
+
+      - name: Try the cluster!
+        run: |
+          kubectl get pods -A
+          helm --version
+
   release:
-    needs: [unittest, lint]
+    needs: [unittest, lint, test-in-minikube]
     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')
     permissions:
       contents: write
