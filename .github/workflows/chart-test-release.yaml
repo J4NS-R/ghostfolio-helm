@@ -67,10 +67,16 @@ jobs:
           helm repo add valkey https://valkey.io/valkey-helm/
           kubectl create secret generic gf-secret --from-literal=JWT_SECRET_KEY=$(openssl rand -hex 24) --from-literal=ACCESS_TOKEN_SALT=$(openssl rand -hex 24)
           kubectl create secret generic valkey-secret --from-literal=default=$(openssl rand -hex 24)
-          kubectl create secret generic pg-secret --from-literal=postgres-password=$(openssl rand -hex 24)
+          pgpassword=$(openssl rand -hex 24)
+          kubectl create secret generic pg-secret --from-literal=postgres-password="$pgpassword" --from-literal=uri="postgresql://ghostfolio-user:$pgpassword@ghostfolio-postgres:5432/ghostfolio-db?sslmode=prefer"
           helm dependency build chart
           helm upgrade --install ghostfolio chart -f chart/tests/test.values.yaml
           kubectl wait --for=condition=Ready pods -l app.kubernetes.io/instance=ghostfolio --timeout=300s
+
+      - name: Confirm ghostfolio is running
+        run: |
+          kubectl port-forward svc/ghostfolio 3333:80 &
+          curl -Ssf localhost:3333/en | cat | head
 
   release:
     needs: [unittest, lint, test-in-minikube]

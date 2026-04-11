@@ -67,62 +67,16 @@ Create the postgres subchart fullname - mirrors the postgres subchart's fullname
 {{- end }}
 
 {{/*
-Determine if we're using customUser mode for PostgreSQL credentials.
-Returns "customUser" if customUser.existingSecret is set, otherwise empty string.
-*/}}
-{{- define "ghostfolio.postgresAuthMode" -}}
-{{- if .Values.postgres.customUser.existingSecret -}}
-customUser
-{{- end -}}
-{{- end }}
-
-{{/*
 Get the name of the Secret containing the PostgreSQL credentials.
-Priority: postgres.customUser.existingSecret > postgres.auth.existingSecret > auto-generated secret.
+When postgres.auth.existingSecret is set, the user manages their own secret.
+Otherwise the postgres subchart auto-generates one named after its fullname.
 */}}
 {{- define "ghostfolio.postgresSecretName" -}}
-{{- if .Values.postgres.customUser.existingSecret -}}
-{{- .Values.postgres.customUser.existingSecret -}}
-{{- else if .Values.postgres.auth.existingSecret -}}
+{{- if .Values.postgres.auth.existingSecret -}}
 {{- .Values.postgres.auth.existingSecret -}}
 {{- else -}}
 {{- include "ghostfolio.postgresFullname" . -}}
 {{- end -}}
-{{- end }}
-
-{{/*
-Get the password secret key for PostgreSQL (customUser mode).
-*/}}
-{{- define "ghostfolio.postgresPasswordSecretKey" -}}
-{{- .Values.postgres.customUser.secretKeys.password -}}
-{{- end }}
-
-{{/*
-Get the literal postgres username value (empty string if using secretKey).
-*/}}
-{{- define "ghostfolio.postgresUserValue" -}}
-{{- if .Values.postgres.customUser.secretKeys.name -}}{{- else -}}{{- .Values.postgres.customUser.name -}}{{- end -}}
-{{- end }}
-
-{{/*
-Get the secret key name for postgres username (empty string if using literal value).
-*/}}
-{{- define "ghostfolio.postgresUserSecretKey" -}}
-{{- .Values.postgres.customUser.secretKeys.name -}}
-{{- end }}
-
-{{/*
-Get the literal postgres database value (empty string if using secretKey).
-*/}}
-{{- define "ghostfolio.postgresDbValue" -}}
-{{- if .Values.postgres.customUser.secretKeys.database -}}{{- else -}}{{- .Values.postgres.customUser.database -}}{{- end -}}
-{{- end }}
-
-{{/*
-Get the secret key name for postgres database (empty string if using literal value).
-*/}}
-{{- define "ghostfolio.postgresDbSecretKey" -}}
-{{- .Values.postgres.customUser.secretKeys.database -}}
 {{- end }}
 
 {{/*

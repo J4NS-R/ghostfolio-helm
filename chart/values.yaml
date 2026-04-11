@@ -35,16 +35,17 @@ ghostfolio:
 # For more information checkout: https://github.com/CloudPirates-io/helm-charts/tree/main/charts/postgres
 # To use an external PostgreSQL server, set postgres.enabled=false and add an item under `env` with
 # name=DATABASE_URL and either a `value` or `valueFrom` expression pointing to your connection string.
+# IMPORTANT: When postgres.enabled=true, the Secret referenced by auth.existingSecret (or the auto-generated
+# one) MUST contain a key named 'uri' with the full PostgreSQL connection string
+# (e.g. postgresql://user:pass@host:5432/db).
 postgres:
   enabled: true
-  customUser:
-    name: ghostfolio-user
+  auth:
+    username: ghostfolio-user
     database: ghostfolio-db
-    existingSecret: ""  # required
+    existingSecret: ""
     secretKeys:
-      password: "postgres-password"  # required key in secret
-      name: ""  # will use literal 'ghostfolio-user'
-      database: ""  # will use literal 'ghostfolio-db'
+      adminPasswordKey: "postgres-password"
 
 # This defines the Valkey server configuration that will be deployed using Helm subchart.
 # Set the .enabled key to false to use an external Valkey/Redis server.

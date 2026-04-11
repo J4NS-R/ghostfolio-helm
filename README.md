@@ -50,8 +50,8 @@ valkey:
     usersExistingSecret: valkey-secret  # required key: default
 
 postgres:
-  customUser:
-    existingSecret: pg-secret  # required key: postgres-password
+  auth:
+    existingSecret: pg-secret  # required keys: postgres-password, uri
 ```
 
 ```bash

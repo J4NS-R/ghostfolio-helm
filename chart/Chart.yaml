@@ -16,9 +16,7 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: changed
-      description: Default postgres subchart values to use more intuitive 'customUser' field
-    - kind: added
-      description: POSTGRES_* env vars will now be added to the deployment by default and the DATABASE_URL will be constructed automatically
+      description: TODO
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za

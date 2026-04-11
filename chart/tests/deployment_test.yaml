@@ -17,69 +17,8 @@ tests:
           path: spec.template.spec.containers[0].image
           value: ghostfolio/ghostfolio:1.2.3
 
-  - it: injects POSTGRES_* env vars when customUser.existingSecret is set
+  - it: injects DATABASE_URL from subchart secret when postgres enabled
     template: deployment.yaml
-    asserts:
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: POSTGRES_USER
-            value: ghostfolio-user
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: POSTGRES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: pg-secret
-                key: postgres-password
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: POSTGRES_DB
-            value: ghostfolio-db
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: DATABASE_URL
-            value: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@RELEASE-NAME-postgres:5432/${POSTGRES_DB}?connect_timeout=300&sslmode=prefer"
-
-  - it: uses secretKey ref for POSTGRES_USER when secretKeys.name is set
-    template: deployment.yaml
-    set:
-      postgres.customUser.secretKeys.name: my-user-key
-    asserts:
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: POSTGRES_USER
-            valueFrom:
-              secretKeyRef:
-                name: pg-secret
-                key: my-user-key
-
-  - it: uses secretKey ref for POSTGRES_DB when secretKeys.database is set
-    template: deployment.yaml
-    set:
-      postgres.customUser.secretKeys.database: my-db-key
-    asserts:
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: POSTGRES_DB
-            valueFrom:
-              secretKeyRef:
-                name: pg-secret
-                key: my-db-key
-
-  - it: uses auth.existingSecret uri when customUser.existingSecret not set
-    template: deployment.yaml
-    set:
-      postgres:
-        customUser:
-          existingSecret: ""
-        auth:
-          existingSecret: auth-secret
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env
@@ -87,19 +26,8 @@ tests:
             name: DATABASE_URL
             valueFrom:
               secretKeyRef:
-                name: auth-secret
+                name: pg-secret
                 key: uri
-
-  - it: uses postgresFullname as hostname in DATABASE_URL
-    template: deployment.yaml
-    set:
-      postgres.fullnameOverride: my-custom-postgres
-    asserts:
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: DATABASE_URL
-            value: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@my-custom-postgres:5432/${POSTGRES_DB}?connect_timeout=300&sslmode=prefer"
 
   - it: does not inject DATABASE_URL when postgres disabled
     template: deployment.yaml
@@ -154,12 +82,26 @@ tests:
                 name: my-external-db-secret
                 key: connection-string
 
+  - it: uses custom auth.existingSecret for DATABASE_URL
+    template: deployment.yaml
+    set:
+      postgres.auth.existingSecret: my-custom-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: my-custom-secret
+                key: uri
+
   - it: uses postgres fullnameOverride for secret name
     template: deployment.yaml
     set:
       postgres:
         fullnameOverride: custom-pg
-        customUser:
+        auth:
           existingSecret: ""
     asserts:
       - contains:
@@ -169,39 +111,6 @@ tests:
             valueFrom:
               secretKeyRef:
                 name: custom-pg
-                key: uri
-
-  - it: prefers customUser.existingSecret over auth.existingSecret
-    template: deployment.yaml
-    set:
-      postgres:
-        customUser:
-          existingSecret: custom-user-secret
-        auth:
-          existingSecret: auth-secret
-    asserts:
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: DATABASE_URL
-            value: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@RELEASE-NAME-postgres:5432/${POSTGRES_DB}?connect_timeout=300&sslmode=prefer"
-
-  - it: falls back to auth.existingSecret when customUser.existingSecret is empty
-    template: deployment.yaml
-    set:
-      postgres:
-        customUser:
-          existingSecret: ""
-        auth:
-          existingSecret: auth-secret
-    asserts:
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: DATABASE_URL
-            valueFrom:
-              secretKeyRef:
-                name: auth-secret
                 key: uri
 
   - it: uses built-in valkey secret name and default key

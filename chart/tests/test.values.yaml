@@ -6,5 +6,5 @@ valkey:
     usersExistingSecret: valkey-secret
 
 postgres:
-  customUser:
+  auth:
     existingSecret: pg-secret
