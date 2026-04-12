@@ -15,8 +15,8 @@ annotations:
       email: git@moat.rauten.co.za
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
-    - kind: added
-      description: Bump ghostfolio image to v2.254.0
+    - kind: changed
+      description: Bump valkey subchart to v0.9.4
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
