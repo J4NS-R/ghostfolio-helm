@@ -27,14 +27,14 @@ dependencies:
     repository: "oci://registry-1.docker.io/cloudpirates"
     condition: postgres.enabled
   - name: valkey
-    version: "0.9.3"
+    version: "0.9.4"
     repository: "https://valkey.io/valkey-helm/"
     condition: valkey.enabled
 
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.1.8
+version: 0.1.9
 
 # https://github.com/ghostfolio/ghostfolio/releases
 appVersion: "2.254.0"
