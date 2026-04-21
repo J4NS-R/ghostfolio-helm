@@ -16,7 +16,7 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: changed
-      description: Bump valkey subchart to v0.9.4
+      description: Bump ghostfolio/ghostfolio appVersion to v2.255.0
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
@@ -34,7 +34,7 @@ dependencies:
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.1.9
+version: 0.1.10
 
 # https://github.com/ghostfolio/ghostfolio/releases
-appVersion: "2.254.0"
+appVersion: "2.255.0"
