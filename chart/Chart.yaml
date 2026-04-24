@@ -16,7 +16,7 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: changed
-      description: Bump postgres subchart to v0.19.1
+      description: Bump postgres subchart to v0.19.2
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
