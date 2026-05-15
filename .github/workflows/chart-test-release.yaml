@@ -24,6 +24,8 @@ jobs:
       - name: Run helm unittest
         uses: d3adb5/helm-unittest-action@v2.5.0
         with:
+          helm-version: 'v3.21.0'  # see https://github.com/d3adb5/helm-unittest-action/issues/23
+          unittest-version: 'v1.0.3'  # see https://github.com/helm-unittest/helm-unittest/issues/856
           charts: chart
 
   lint:
