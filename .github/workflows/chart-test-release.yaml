@@ -21,10 +21,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Install Helm
+        uses: azure/setup-helm@v5
+
+      - name: Install helm-unittest plugin
+        run: |
+          if helm plugin list | sed 1d | awk '{print $1}' | grep -q '^unittest$'; then
+            helm plugin uninstall unittest
+          fi
+          helm plugin install https://github.com/helm-unittest/helm-unittest --version ~1
+
       - name: Run helm unittest
-        uses: d3adb5/helm-unittest-action@v2.5.0
-        with:
-          charts: chart
+        run: helm unittest chart
 
   lint:
     runs-on: ubuntu-latest
@@ -68,7 +76,7 @@ jobs:
           kubectl create secret generic gf-secret --from-literal=JWT_SECRET_KEY=$(openssl rand -hex 24) --from-literal=ACCESS_TOKEN_SALT=$(openssl rand -hex 24)
           kubectl create secret generic valkey-secret --from-literal=default=$(openssl rand -hex 24)
           pgpassword=$(openssl rand -hex 24)
-          kubectl create secret generic pg-secret --from-literal=postgres-password="$pgpassword" --from-literal=uri="postgresql://ghostfolio-user:$pgpassword@ghostfolio-postgres:5432/ghostfolio-db?sslmode=prefer"
+          kubectl create secret generic pg-secret --from-literal=postgres-password="$pgpassword" --from-literal=uri="postgresql://ghostfolio-user:$pgpassword@ghostfolio-postgres:5432/ghostfolio-db?schema=public"
           helm dependency build chart
           helm upgrade --install ghostfolio chart -f chart/tests/test.values.yaml
           kubectl wait --for=condition=Ready pods -l app.kubernetes.io/instance=ghostfolio --timeout=300s
