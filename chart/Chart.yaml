@@ -16,7 +16,9 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: changed
-      description: Bump ghostfolio docker tag to v3.6.0
+      description: Bump ghostfolio docker tag from v2.255.0 to v3.6.0
+    - kind: deprecated
+      description: See here for breaking changes: https://github.com/ghostfolio/ghostfolio/releases/tag/3.0.0
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
