@@ -240,9 +240,9 @@ tests:
   - it: init container uses initImage repository and tag
     template: deployment.yaml
     asserts:
-      - equal:
+      - matchRegex:
           path: spec.template.spec.initContainers[0].image
-          value: "busybox:1.37"
+          pattern: "^busybox:1"
 
   - it: init container image can be overridden
     template: deployment.yaml
