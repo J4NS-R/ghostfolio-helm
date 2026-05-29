@@ -11,14 +11,6 @@ This project provides a _Helm_ chart for deploying **[Ghostfolio: the Open Sourc
 
 ## 1. Installation
 
-### Prerequisites
-
-- A **Kubernetes** cluster,
-- A **PostgreSQL** server (optional),
-- A **Valkey** instance (optional),
-- The **Helm** client installed locally (see _[Quickstart Guide](https://helm.sh/docs/intro/quickstart/)_),
-- The `kubectl` command-line tool installed locally (optional, see _[Install Tools](https://kubernetes.io/docs/tasks/tools/)_)
-
 ### Add the GitHub Helm repository
 
 ```bash
