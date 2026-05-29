@@ -15,7 +15,7 @@ image:
 # Init container image used to wait for dependencies (Postgres, Valkey) before starting Ghostfolio.
 initImage:
   repository: busybox
-  tag: "1.37"
+  tag: "1.38"
   pullPolicy: IfNotPresent
 
 # This defines the Ghostfolio configuration
