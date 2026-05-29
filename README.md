@@ -9,15 +9,7 @@
 
 This project provides a _Helm_ chart for deploying **[Ghostfolio: the Open Source Wealth Management Software](https://github.com/ghostfolio/ghostfolio)** into any _Kubernetes_ cluster. It integrates the official _Docker_ images built by the _Ghostfolio_ team and hosted on _[DockerHub](https://hub.docker.com/r/ghostfolio/ghostfolio)_. It also includes PostgreSQL and [Valkey](https://github.com/valkey-io/valkey-helm) as optional subcharts.
 
-## 1. Installation
-
-### Prerequisites
-
-- A **Kubernetes** cluster,
-- A **PostgreSQL** server (optional),
-- A **Valkey** instance (optional),
-- The **Helm** client installed locally (see _[Quickstart Guide](https://helm.sh/docs/intro/quickstart/)_),
-- The `kubectl` command-line tool installed locally (optional, see _[Install Tools](https://kubernetes.io/docs/tasks/tools/)_)
+## Installation
 
 ### Add the GitHub Helm repository
 
@@ -66,17 +58,22 @@ helm test ghostfolio -n <namespace>
 
 Replace <namespace> with your target namespace if you specified one.
 
-## 2. Uninstall the chart
+### Uninstall the chart
 
 ```bash
 helm uninstall ghostfolio -n <namespace>
 ```
 
-## 3. License
+## Changelog and breaking changes
+
+This repo follows semantic versioning.
+See the [changelog on ArtifactHub](https://artifacthub.io/packages/helm/ghostfolio-unofficial/ghostfolio?modal=changelog)
+
+## License
 
 Distributed under the Apache 2.0 License. See `LICENSE` for more information.
 
-## 4. Contributing
+## Contributing
 
 PR's welcome. See `CONTRIBUTING.md`
 
