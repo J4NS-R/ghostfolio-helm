@@ -5,6 +5,44 @@ entries:
       artifacthub.io/alternativeName: ghostfolio-helm
       artifacthub.io/changes: |
         - kind: changed
+          description: Bump ghostfolio image tag to v3.11.0
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Chart source
+          url: https://github.com/J4NS-R/ghostfolio-helm
+        - name: Ghostfolio source
+          url: https://github.com/ghostfolio/ghostfolio
+      artifacthub.io/maintainers: |
+        - name: J4NS-R
+          email: git@moat.rauten.co.za
+    apiVersion: v2
+    appVersion: 3.11.0
+    created: "2026-06-15T15:42:46.481629561Z"
+    dependencies:
+    - condition: postgres.enabled
+      name: postgres
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.19.5
+    - condition: valkey.enabled
+      name: valkey
+      repository: https://valkey.io/valkey-helm/
+      version: 0.9.4
+    description: Unofficial Helm chart for Ghostfolio, an open source wealth management
+      software.
+    digest: 46ddfaa2a2b048ef35844f3d0bd4cfa2a612a99c8e6d57e7ae3606c72b6d8022
+    icon: https://nobsdelivr.private.coffee/gh/selfhst/icons@main/svg/ghostfolio.svg
+    maintainers:
+    - email: git@moat.rauten.co.za
+      name: J4NS-R
+    name: ghostfolio
+    type: application
+    urls:
+    - https://github.com/J4NS-R/ghostfolio-helm/releases/download/ghostfolio-0.2.2/ghostfolio-0.2.2.tgz
+    version: 0.2.2
+  - annotations:
+      artifacthub.io/alternativeName: ghostfolio-helm
+      artifacthub.io/changes: |
+        - kind: changed
           description: Bump busybox default tag to v1.38
       artifacthub.io/license: Apache-2.0
       artifacthub.io/links: |
@@ -821,4 +859,4 @@ entries:
     urls:
     - https://github.com/J4NS-R/ghostfolio-helm/releases/download/ghostfolio-0.1.0-rc.1/ghostfolio-0.1.0-rc.1.tgz
     version: 0.1.0-rc.1
-generated: "2026-05-29T10:06:20.454836993Z"
+generated: "2026-06-15T15:42:46.481831139Z"
