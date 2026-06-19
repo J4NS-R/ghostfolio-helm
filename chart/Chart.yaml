@@ -16,7 +16,7 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: changed
-      description: Bump ghostfolio image tag to v3.12.0
+      description: Bump valkey chart dependency to 0.10.0
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
@@ -27,14 +27,14 @@ dependencies:
     repository: "oci://registry-1.docker.io/cloudpirates"
     condition: postgres.enabled
   - name: valkey
-    version: "0.9.4"
+    version: "0.10.0"
     repository: "https://valkey.io/valkey-helm/"
     condition: valkey.enabled
 
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.2.3
+version: 0.2.4
 
 # https://github.com/ghostfolio/ghostfolio/releases
 appVersion: "3.12.0"
