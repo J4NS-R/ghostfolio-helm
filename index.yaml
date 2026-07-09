@@ -5,6 +5,44 @@ entries:
       artifacthub.io/alternativeName: ghostfolio-helm
       artifacthub.io/changes: |
         - kind: changed
+          description: Bump postgres dependency to 0.19.6
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Chart source
+          url: https://github.com/J4NS-R/ghostfolio-helm
+        - name: Ghostfolio source
+          url: https://github.com/ghostfolio/ghostfolio
+      artifacthub.io/maintainers: |
+        - name: J4NS-R
+          email: git@moat.rauten.co.za
+    apiVersion: v2
+    appVersion: 3.21.0
+    created: "2026-07-09T07:14:32.490193895Z"
+    dependencies:
+    - condition: postgres.enabled
+      name: postgres
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.19.6
+    - condition: valkey.enabled
+      name: valkey
+      repository: https://valkey.io/valkey-helm/
+      version: 0.10.0
+    description: Unofficial Helm chart for Ghostfolio, an open source wealth management
+      software.
+    digest: 05be72021687536378982027b86fc61281322f9b281cedc3aa742c863b418852
+    icon: https://nobsdelivr.private.coffee/gh/selfhst/icons@main/svg/ghostfolio.svg
+    maintainers:
+    - email: git@moat.rauten.co.za
+      name: J4NS-R
+    name: ghostfolio
+    type: application
+    urls:
+    - https://github.com/J4NS-R/ghostfolio-helm/releases/download/ghostfolio-0.2.8/ghostfolio-0.2.8.tgz
+    version: 0.2.8
+  - annotations:
+      artifacthub.io/alternativeName: ghostfolio-helm
+      artifacthub.io/changes: |
+        - kind: changed
           description: Bump ghostfolio image tag to v3.21.0
       artifacthub.io/license: Apache-2.0
       artifacthub.io/links: |
@@ -1049,4 +1087,4 @@ entries:
     urls:
     - https://github.com/J4NS-R/ghostfolio-helm/releases/download/ghostfolio-0.1.0-rc.1/ghostfolio-0.1.0-rc.1.tgz
     version: 0.1.0-rc.1
-generated: "2026-07-08T07:42:34.752669074Z"
+generated: "2026-07-09T07:14:32.490427035Z"
