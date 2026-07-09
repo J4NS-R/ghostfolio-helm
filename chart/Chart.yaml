@@ -16,7 +16,7 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: changed
-      description: Bump ghostfolio image tag to v3.21.0
+      description: Bump postgres dependency to 0.19.6
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
