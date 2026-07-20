@@ -73,11 +73,46 @@ jobs:
           helm upgrade --install ghostfolio chart -f chart/tests/test.values.yaml
           kubectl wait --for=condition=Ready pods -l app.kubernetes.io/instance=ghostfolio --timeout=300s
 
-      - name: Confirm ghostfolio is running
+      - name: Smoke-test the Ghostfolio API (user signup)
         run: |
-          kubectl port-forward svc/ghostfolio 3333:80 &
-          sleep 8
-          curl -Ssf localhost:3333/en
+          set -euo pipefail
+          kubectl port-forward svc/ghostfolio 3333:80 >/tmp/pf.log 2>&1 &
+          pf_pid=$!
+          trap 'kill $pf_pid 2>/dev/null || true' EXIT
+          for _ in $(seq 1 30); do
+            curl -Ssf http://localhost:3333/api/v1/health >/dev/null 2>&1 && break
+            sleep 1
+          done
+
+          curl -Ssf http://localhost:3333/api/v1/info | tee info.json | jq -e '.'
+
+          signup_response=$(curl -Ssf -X POST http://localhost:3333/api/v1/user)
+          echo "${signup_response}" | tee signup.json | jq -e '.authToken and .accessToken and .role'
+
+          auth_token=$(jq -r .authToken signup.json)
+          access_token=$(jq -r .accessToken signup.json)
+          role=$(jq -r .role signup.json)
+
+          test "${role}" = "ADMIN"
+          test -n "${auth_token}"
+          test -n "${access_token}"
+
+          curl -Ssf -H "Authorization: Bearer ${auth_token}" \
+            http://localhost:3333/api/v1/user | tee user.json | jq -e '.id'
+
+          curl -Ssf http://localhost:3333/api/v1/health | jq -e '.status == "OK"'
+
+      - name: Upload API test artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghostfolio-api-test-logs
+          path: |
+            signup.json
+            info.json
+            user.json
+            /tmp/pf.log
+          if-no-files-found: ignore
 
   release:
     needs: [unittest, lint, test-in-minikube]
