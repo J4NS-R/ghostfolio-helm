@@ -71,22 +71,24 @@ jobs:
           kubectl create secret generic pg-secret --from-literal=postgres-password="$pgpassword" --from-literal=uri="postgresql://ghostfolio-user:$pgpassword@ghostfolio-postgres:5432/ghostfolio-db"
           helm dependency build chart
           helm upgrade --install ghostfolio chart -f chart/tests/test.values.yaml
+          echo "Waiting for pods to become ready"
           kubectl wait --for=condition=Ready pods -l app.kubernetes.io/instance=ghostfolio --timeout=300s
 
       - name: Smoke-test the Ghostfolio API (user signup)
         run: |
           set -euo pipefail
-          kubectl port-forward svc/ghostfolio 3333:80 >/tmp/pf.log 2>&1 &
+          BASE_URL=http://localhost:3334
+          kubectl port-forward svc/ghostfolio 3334:80 >/tmp/pf.log 2>&1 &
           pf_pid=$!
           trap 'kill $pf_pid 2>/dev/null || true' EXIT
           for _ in $(seq 1 30); do
-            curl -Ssf http://localhost:3333/api/v1/health >/dev/null 2>&1 && break
+            curl -Ssf "${BASE_URL}/api/v1/health" >/dev/null 2>&1 && break
             sleep 1
           done
 
-          curl -Ssf http://localhost:3333/api/v1/info | tee info.json | jq -e '.'
+          curl -Ssf "${BASE_URL}/api/v1/info" | tee info.json | jq -e '.'
 
-          signup_response=$(curl -Ssf -X POST http://localhost:3333/api/v1/user)
+          signup_response=$(curl -Ssf -X POST "${BASE_URL}/api/v1/user")
           echo "${signup_response}" | tee signup.json | jq -e '.authToken and .accessToken and .role'
 
           auth_token=$(jq -r .authToken signup.json)
@@ -98,9 +100,44 @@ jobs:
           test -n "${access_token}"
 
           curl -Ssf -H "Authorization: Bearer ${auth_token}" \
-            http://localhost:3333/api/v1/user | tee user.json | jq -e '.id'
+            "${BASE_URL}/api/v1/user" | tee user.json | jq -e '.id'
 
-          curl -Ssf http://localhost:3333/api/v1/health | jq -e '.status == "OK"'
+          # User-setting persistence: PUT then re-read and confirm it stuck.
+          curl -Ssf -X PUT \
+            -H "Authorization: Bearer ${auth_token}" \
+            -H "Content-Type: application/json" \
+            -d '{"baseCurrency":"EUR"}' \
+            "${BASE_URL}/api/v1/user/setting" >/dev/null
+          curl -Ssf -H "Authorization: Bearer ${auth_token}" \
+            "${BASE_URL}/api/v1/user" | jq -e '.settings.settings.baseCurrency == "EUR"'
+
+          # Platform round-trip: write, read, delete.
+          platform_name="ci-test-platform-$$"
+          curl -Ssf -X POST \
+            -H "Authorization: Bearer ${auth_token}" \
+            -H "Content-Type: application/json" \
+            -d "{\"name\":\"${platform_name}\",\"url\":\"https://example.com\"}" \
+            "${BASE_URL}/api/v1/platform" | tee platform.json | jq -e '.id'
+          platform_id=$(jq -r .id platform.json)
+          curl -Ssf -H "Authorization: Bearer ${auth_token}" \
+            "${BASE_URL}/api/v1/platform" | jq -e --arg n "${platform_name}" '.platforms | map(select(.name == $n)) | length == 1'
+          curl -Ssf -X DELETE -H "Authorization: Bearer ${auth_token}" \
+            "${BASE_URL}/api/v1/platform/${platform_id}"
+
+          # Account round-trip: write, read, delete.
+          account_name="ci-test-account-$$"
+          curl -Ssf -X POST \
+            -H "Authorization: Bearer ${auth_token}" \
+            -H "Content-Type: application/json" \
+            -d "{\"name\":\"${account_name}\",\"currency\":\"EUR\",\"balance\":0,\"platformId\":null}" \
+            "${BASE_URL}/api/v1/account" | tee account.json | jq -e '.id'
+          account_id=$(jq -r .id account.json)
+          curl -Ssf -H "Authorization: Bearer ${auth_token}" \
+            "${BASE_URL}/api/v1/account" | jq -e --arg n "${account_name}" '.accounts | map(select(.name == $n)) | length == 1'
+          curl -Ssf -X DELETE -H "Authorization: Bearer ${auth_token}" \
+            "${BASE_URL}/api/v1/account/${account_id}"
+
+          curl -Ssf "${BASE_URL}/api/v1/health" | jq -e '.status == "OK"'
 
       - name: Upload API test artifacts on failure
         if: failure()
@@ -111,6 +148,8 @@ jobs:
             signup.json
             info.json
             user.json
+            platform.json
+            account.json
             /tmp/pf.log
           if-no-files-found: ignore
 
