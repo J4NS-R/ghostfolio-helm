@@ -8,11 +8,13 @@ on:
     paths:
       - "chart/**"
       - ".github/workflows/chart-test-release.yaml"
+      - ".github/scripts/**"
   pull_request:
     branches: [master]
     paths:
       - "chart/**"
       - ".github/workflows/chart-test-release.yaml"
+      - ".github/scripts/**"
 
 jobs:
   unittest:
@@ -74,70 +76,8 @@ jobs:
           echo "Waiting for pods to become ready"
           kubectl wait --for=condition=Ready pods -l app.kubernetes.io/instance=ghostfolio --timeout=300s
 
-      - name: Smoke-test the Ghostfolio API (user signup)
-        run: |
-          set -euo pipefail
-          BASE_URL=http://localhost:3334
-          kubectl port-forward svc/ghostfolio 3334:80 >/tmp/pf.log 2>&1 &
-          pf_pid=$!
-          trap 'kill $pf_pid 2>/dev/null || true' EXIT
-          for _ in $(seq 1 30); do
-            curl -Ssf "${BASE_URL}/api/v1/health" >/dev/null 2>&1 && break
-            sleep 1
-          done
-
-          curl -Ssf "${BASE_URL}/api/v1/info" | tee info.json | jq -e '.'
-
-          signup_response=$(curl -Ssf -X POST "${BASE_URL}/api/v1/user")
-          echo "${signup_response}" | tee signup.json | jq -e '.authToken and .accessToken and .role'
-
-          auth_token=$(jq -r .authToken signup.json)
-          access_token=$(jq -r .accessToken signup.json)
-          role=$(jq -r .role signup.json)
-
-          test "${role}" = "ADMIN"
-          test -n "${auth_token}"
-          test -n "${access_token}"
-
-          curl -Ssf -H "Authorization: Bearer ${auth_token}" \
-            "${BASE_URL}/api/v1/user" | tee user.json | jq -e '.id'
-
-          # User-setting persistence: PUT then re-read and confirm it stuck.
-          curl -Ssf -X PUT \
-            -H "Authorization: Bearer ${auth_token}" \
-            -H "Content-Type: application/json" \
-            -d '{"baseCurrency":"EUR"}' \
-            "${BASE_URL}/api/v1/user/setting" >/dev/null
-          curl -Ssf -H "Authorization: Bearer ${auth_token}" \
-            "${BASE_URL}/api/v1/user" | jq -e '.settings.settings.baseCurrency == "EUR"'
-
-          # Platform round-trip: write, read, delete.
-          platform_name="ci-test-platform-$$"
-          curl -Ssf -X POST \
-            -H "Authorization: Bearer ${auth_token}" \
-            -H "Content-Type: application/json" \
-            -d "{\"name\":\"${platform_name}\",\"url\":\"https://example.com\"}" \
-            "${BASE_URL}/api/v1/platform" | tee platform.json | jq -e '.id'
-          platform_id=$(jq -r .id platform.json)
-          curl -Ssf -H "Authorization: Bearer ${auth_token}" \
-            "${BASE_URL}/api/v1/platform" | jq -e --arg n "${platform_name}" '.platforms | map(select(.name == $n)) | length == 1'
-          curl -Ssf -X DELETE -H "Authorization: Bearer ${auth_token}" \
-            "${BASE_URL}/api/v1/platform/${platform_id}"
-
-          # Account round-trip: write, read, delete.
-          account_name="ci-test-account-$$"
-          curl -Ssf -X POST \
-            -H "Authorization: Bearer ${auth_token}" \
-            -H "Content-Type: application/json" \
-            -d "{\"name\":\"${account_name}\",\"currency\":\"EUR\",\"balance\":0,\"platformId\":null}" \
-            "${BASE_URL}/api/v1/account" | tee account.json | jq -e '.id'
-          account_id=$(jq -r .id account.json)
-          curl -Ssf -H "Authorization: Bearer ${auth_token}" \
-            "${BASE_URL}/api/v1/account" | jq -e --arg n "${account_name}" '.accounts | map(select(.name == $n)) | length == 1'
-          curl -Ssf -X DELETE -H "Authorization: Bearer ${auth_token}" \
-            "${BASE_URL}/api/v1/account/${account_id}"
-
-          curl -Ssf "${BASE_URL}/api/v1/health" | jq -e '.status == "OK"'
+      - name: Smoke-test the Ghostfolio API
+        run: bash .github/scripts/smoke-test.sh
 
       - name: Upload API test artifacts on failure
         if: failure()
