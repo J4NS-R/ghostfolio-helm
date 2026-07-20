@@ -52,6 +52,17 @@
       "matchDatasources": ["docker"],
       "matchPackageNames": ["cloudpirates/postgres"],
       "commitMessageTopic": "Helm chart {{depName}}",
+    },
+    {
+      "description": "Non-breaking changes",
+      "matchJsonata": ["isBreaking != true"],
+      "addLabels": ["non-breaking"]
+    },
+    {
+      description: "Breaking changes",
+      matchJsonata: ["isBreaking = true"],
+      automerge: false,
+      addLabels: ["breaking"]
     }
   ],
   "labels": ["renovate"],

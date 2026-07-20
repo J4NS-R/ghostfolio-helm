@@ -7,7 +7,7 @@
 
 # Unofficial Ghostfolio Helm Chart
 
-This project provides a _Helm_ chart for deploying **[Ghostfolio: the Open Source Wealth Management Software](https://github.com/ghostfolio/ghostfolio)** into any _Kubernetes_ cluster. It integrates the official _Docker_ images built by the _Ghostfolio_ team and hosted on _[DockerHub](https://hub.docker.com/r/ghostfolio/ghostfolio)_. It also includes PostgreSQL and [Valkey](https://github.com/valkey-io/valkey-helm) as optional subcharts.
+This project provides a Helm chart for deploying **[Ghostfolio: the Open Source Wealth Management Software](https://github.com/ghostfolio/ghostfolio)** into any Kubernetes cluster. It integrates the official Docker images built by the Ghostfolio team, hosted on [DockerHub](https://hub.docker.com/r/ghostfolio/ghostfolio). It also includes PostgreSQL and [Valkey](https://github.com/valkey-io/valkey-helm) as optional subcharts.
 
 ## Installation
 
@@ -22,8 +22,6 @@ helm search repo --versions ghostfolio
 
 ### Install the chart
 
-First, create one or more secrets for the ghostfolio app. See expected keys below. Secret values can be almost any string. Example: `openssl rand -hex 24`.
-
 Create a values file configuring the chart:
 
 ```yaml
@@ -33,7 +31,8 @@ Create a values file configuring the chart:
 
 ghostfolio:
   existingSecret: gf-secret # required keys: JWT_SECRET_KEY, ACCESS_TOKEN_SALT
-  ROOT_URL: "http://ghostfolio.ghostfolio.svc.cluster.local"
+  # Optionally specify arbitrary env vars: https://github.com/ghostfolio/ghostfolio#supported-environment-variables
+  # ROOT_URL: "http://ghostfolio.ghostfolio.svc.cluster.local"
 
 valkey:
   auth:
@@ -43,6 +42,20 @@ postgres:
   auth:
     existingSecret: pg-secret  # required keys: postgres-password, uri
 ```
+
+Then create the required secrets in-cluster. For example:
+
+```bash
+kubectl create secret generic gf-secret \
+  --from-literal=JWT_SECRET_KEY=$(openssl rand -hex 24) \
+  --from-literal=ACCESS_TOKEN_SALT=$(openssl rand -hex 24)
+kubectl create secret generic valkey-secret \
+  --from-literal=default=$(openssl rand -hex 24)
+pgpassword=$(openssl rand -hex 24)
+kubectl create secret generic pg-secret --from-literal=postgres-password="$pgpassword" --from-literal=uri="postgresql://ghostfolio-user:$pgpassword@ghostfolio-postgres:5432/ghostfolio-db"
+```
+
+And finally, install:
 
 ```bash
 helm upgrade --install ghostfolio ghostfolio/ghostfolio -f values.yaml -n <namespace>
@@ -55,8 +68,6 @@ kubectl get pods -l app.kubernetes.io/instance=ghostfolio -n <namespace>
 # Once all pods are up:
 helm test ghostfolio -n <namespace>
 ```
-
-Replace <namespace> with your target namespace if you specified one.
 
 ### Uninstall the chart
 
