@@ -135,5 +135,6 @@ jobs:
         with:
           charts_dir: "."
           mark_as_latest: ${{ github.ref == 'refs/heads/master' }}
+          skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
