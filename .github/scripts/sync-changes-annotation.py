@@ -33,15 +33,26 @@ ITEM_VERSION_RE = re.compile(r'^\s+version:\s*"?([^"\s]+)"?')
 
 
 def _git_show(ref: str) -> str:
-    result = subprocess.run(
-        ["git", "show", f"{ref}:{CHART_FILE}"],
-        capture_output=True,
-        text=True,
-        check=False,
+    candidates = [ref, f"origin/{ref}"]
+    for candidate in candidates:
+        result = subprocess.run(
+            ["git", "show", f"{candidate}:{CHART_FILE}"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 0:
+            print(f"Resolved base ref {ref!r} via {candidate!r}", file=sys.stderr)
+            return result.stdout
+        print(
+            f"git show {candidate}:{CHART_FILE} failed: {result.stderr.strip() or 'unknown error'}",
+            file=sys.stderr,
+        )
+    print(
+        f"::error::Could not resolve base ref {ref!r} (tried: {', '.join(candidates)})",
+        file=sys.stderr,
     )
-    if result.returncode != 0:
-        return ""
-    return result.stdout
+    return ""
 
 
 def _parse_dependencies(text: str) -> dict:
@@ -82,8 +93,15 @@ def parse_chart(text: str) -> dict:
 
 
 def detect_bumps(base_ref: str) -> list[str]:
-    before = parse_chart(_git_show(base_ref))
-    after = parse_chart(CHART_FILE.read_text())
+    before_text = _git_show(base_ref)
+    after_text = CHART_FILE.read_text()
+    print(f"Base content: {len(before_text)} bytes", file=sys.stderr)
+    print(f"Head content: {len(after_text)} bytes", file=sys.stderr)
+
+    before = parse_chart(before_text)
+    after = parse_chart(after_text)
+    print(f"Parsed before: {before}", file=sys.stderr)
+    print(f"Parsed after:  {after}", file=sys.stderr)
 
     fragments: list[str] = []
 
@@ -94,6 +112,11 @@ def detect_bumps(base_ref: str) -> list[str]:
         old_ver = before["dependencies"].get(name)
         if old_ver and old_ver != new_ver:
             fragments.append(f"Bump {name} subchart to {new_ver}")
+
+    if fragments:
+        print(f"Detected bumps: {fragments}", file=sys.stderr)
+    else:
+        print("No version-line changes detected.", file=sys.stderr)
 
     return fragments
 
