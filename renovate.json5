@@ -21,17 +21,6 @@
       "depNameTemplate": "ghostfolio/ghostfolio",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v?(?<version>.*)$"
-    },
-    {
-      "customType": "regex",
-      "description": "Track Ghostfolio GitHub releases in artifacthub.io/changes annotation",
-      "managerFilePatterns": ["chart/Chart.yaml"],
-      "matchStrings": [
-        "description: Bump ghostfolio image to v(?<currentValue>[\\d\\.]+)"
-      ],
-      "depNameTemplate": "ghostfolio/ghostfolio",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.*)$"
     }
   ],
 

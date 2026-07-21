@@ -35,6 +35,10 @@ This chart is opinionated in the following ways:
 
 ### Releasing
 
+#### Automated Renovate updates
+
+Pull requests opened by Renovate that bump `chart/Chart.yaml`'s `appVersion` or any `dependencies[].version` will be followed by an automated commit from the [sync-changes-annotation workflow](.github/workflows/sync-changes-annotation.yaml). That commit rewrites the `artifacthub.io/changes` annotation with a single `kind: changed` entry describing the bumped versions, so no manual intervention is needed.
+
 #### Stable releases
 
 1. Bump `version` in `chart/Chart.yaml` (e.g. `0.2.0`).

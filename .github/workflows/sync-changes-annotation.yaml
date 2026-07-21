@@ -1,0 +1,43 @@
+name: Sync artifacthub.io/changes annotation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.event.pull_request.user.login == 'renovate[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Sync annotation
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          CHART_FILE: chart/Chart.yaml
+        run: python3 .github/scripts/sync-changes-annotation.py
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet chart/Chart.yaml; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add chart/Chart.yaml
+          git commit -m "chore: update artifacthub.io/changes annotation"
+          git push
