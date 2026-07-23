@@ -45,17 +45,18 @@
     {
       "description": "Non-breaking changes",
       "matchJsonata": ["isBreaking != true"],
-      "addLabels": ["non-breaking"],
-      "automerge": true,
-      "platformAutomerge": true
+      "addLabels": ["non-breaking"]
     },
     {
       description: "Breaking changes",
       matchJsonata: ["isBreaking = true"],
-      automerge: false,
       addLabels: ["breaking"]
     }
   ],
+  // The sync-changes-annotation workflow re-enables platform auto-merge after it
+  // pushes the annotation update, since GitHub disables auto-merge when a non-Renovate
+  // user pushes to the PR. PRs without the "non-breaking" label are still merged manually.
+  "automerge": false,
   "labels": ["renovate"],
   "dependencyDashboardLabels": ["renovate"]
 }
