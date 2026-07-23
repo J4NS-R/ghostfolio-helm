@@ -45,7 +45,9 @@
     {
       "description": "Non-breaking changes",
       "matchJsonata": ["isBreaking != true"],
-      "addLabels": ["non-breaking"]
+      "addLabels": ["non-breaking"],
+      "automerge": true,
+      "platformAutomerge": true
     },
     {
       description: "Breaking changes",
