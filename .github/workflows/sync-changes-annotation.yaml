@@ -17,7 +17,8 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RENOVATE_TOKEN }}
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -33,6 +34,7 @@ jobs:
       - name: Commit changes
         env:
           PUSH_REF: ${{ github.event.pull_request.head.ref }}
+          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
         run: |
           if git diff --quiet chart/Chart.yaml; then
             echo "No changes to commit."
@@ -40,6 +42,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${RENOVATE_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git add chart/Chart.yaml
           git commit -m "chore: update artifacthub.io/changes annotation"
           git push origin "HEAD:${PUSH_REF}"
