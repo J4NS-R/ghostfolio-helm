@@ -16,14 +16,14 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: changed
-      description: Upgrade Ghostfolio to v3.31.0
+      description: Bump postgres subchart to 0.19.11
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
 
 dependencies:
   - name: postgres
-    version: "0.19.6"
+    version: "0.19.11"
     repository: "oci://registry-1.docker.io/cloudpirates"
     condition: postgres.enabled
   - name: valkey
@@ -34,7 +34,7 @@ dependencies:
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.2.10
+version: 0.2.11
 
 # https://github.com/ghostfolio/ghostfolio/releases
 appVersion: "3.31.0"

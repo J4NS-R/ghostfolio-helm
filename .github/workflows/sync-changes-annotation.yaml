@@ -4,9 +4,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-permissions:
-  contents: write
-
 jobs:
   sync:
     if: github.event.pull_request.user.login == 'renovate[bot]'
@@ -32,12 +29,14 @@ jobs:
         run: python3 .github/scripts/sync-changes-annotation.py
 
       - name: Commit changes
+        id: commit
         env:
           PUSH_REF: ${{ github.event.pull_request.head.ref }}
           RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
         run: |
           if git diff --quiet chart/Chart.yaml; then
             echo "No changes to commit."
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
@@ -46,3 +45,19 @@ jobs:
           git add chart/Chart.yaml
           git commit -m "chore: update artifacthub.io/changes annotation"
           git push origin "HEAD:${PUSH_REF}"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Enable auto-merge for non-breaking PRs
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          labels=$(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name')
+          if printf '%s\n' "$labels" | grep -qx 'non-breaking'; then
+            echo "Enabling auto-merge on non-breaking PR #$PR_NUMBER"
+            gh pr merge --auto --squash "$PR_NUMBER" \
+              || echo "::warning::Failed to enable auto-merge (it may already be enabled, or the token lacks permission)"
+          else
+            echo "PR #$PR_NUMBER is not labeled 'non-breaking'; skipping auto-merge."
+          fi
