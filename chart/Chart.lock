@@ -1,9 +1,9 @@
 dependencies:
 - name: postgres
   repository: oci://registry-1.docker.io/cloudpirates
-  version: 0.19.13
+  version: 0.19.14
 - name: valkey
   repository: https://valkey.io/valkey-helm/
   version: 0.11.0
-digest: sha256:e5a311cbef4497aaef50c254042baccb204124cc40112b9ff6c4c74c30eba045
-generated: "2026-08-05T11:32:41.641227158Z"
+digest: sha256:570de99348e135b7feb4fcf38f6fd3c16d1194df57221f620d84de3090132c6d
+generated: "2026-08-10T09:15:57.293418387Z"
