@@ -16,7 +16,7 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: changed
-      description: Upgrade Ghostfolio to v3.55.0
+      description: Upgrade Ghostfolio to v3.56.0
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
@@ -34,7 +34,7 @@ dependencies:
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.2.30
+version: 0.2.31
 
 # https://github.com/ghostfolio/ghostfolio/releases
-appVersion: "3.55.0"
+appVersion: "3.56.0"
