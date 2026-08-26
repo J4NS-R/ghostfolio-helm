@@ -16,7 +16,7 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: changed
-      description: Upgrade Ghostfolio to v3.61.0
+      description: Bump postgres subchart to 0.20.2
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
