@@ -23,7 +23,7 @@ maintainers:
 
 dependencies:
   - name: postgres
-    version: "0.20.6"
+    version: "0.21.0"
     repository: "oci://registry-1.docker.io/cloudpirates"
     condition: postgres.enabled
   - name: valkey
@@ -34,7 +34,7 @@ dependencies:
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.2.60
+version: 0.2.61
 
 # https://github.com/ghostfolio/ghostfolio/releases
 appVersion: "3.79.0"
