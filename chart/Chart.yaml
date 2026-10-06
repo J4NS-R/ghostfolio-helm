@@ -34,7 +34,7 @@ dependencies:
 type: application
 
 # Versions follow Semantic Versioning (https://semver.org/)
-version: 0.2.62
+version: 0.2.63
 
 # https://github.com/ghostfolio/ghostfolio/releases
-appVersion: "3.79.0"
+appVersion: "3.80.2"
