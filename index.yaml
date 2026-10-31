@@ -5,6 +5,44 @@ entries:
       artifacthub.io/alternativeName: ghostfolio-helm
       artifacthub.io/changes: |
         - kind: changed
+          description: Upgrade Ghostfolio to v3.95.0
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Chart source
+          url: https://github.com/J4NS-R/ghostfolio-helm
+        - name: Ghostfolio source
+          url: https://github.com/ghostfolio/ghostfolio
+      artifacthub.io/maintainers: |
+        - name: J4NS-R
+          email: git@moat.rauten.co.za
+    apiVersion: v2
+    appVersion: 3.95.0
+    created: "2026-10-31T13:40:59.891489909Z"
+    dependencies:
+    - condition: postgres.enabled
+      name: postgres
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.21.2
+    - condition: valkey.enabled
+      name: valkey
+      repository: https://valkey.io/valkey-helm/
+      version: 0.11.0
+    description: Unofficial Helm chart for Ghostfolio, an open source wealth management
+      software.
+    digest: f214955213fb22e952d163fcb5909964edda73f29656dd90ab548b1dedd49bf7
+    icon: https://nobsdelivr.private.coffee/gh/selfhst/icons@main/svg/ghostfolio.svg
+    maintainers:
+    - email: git@moat.rauten.co.za
+      name: J4NS-R
+    name: ghostfolio
+    type: application
+    urls:
+    - https://github.com/J4NS-R/ghostfolio-helm/releases/download/ghostfolio-0.2.79/ghostfolio-0.2.79.tgz
+    version: 0.2.79
+  - annotations:
+      artifacthub.io/alternativeName: ghostfolio-helm
+      artifacthub.io/changes: |
+        - kind: changed
           description: Upgrade Ghostfolio to v3.94.0
       artifacthub.io/license: Apache-2.0
       artifacthub.io/links: |
@@ -3707,4 +3745,4 @@ entries:
     urls:
     - https://github.com/J4NS-R/ghostfolio-helm/releases/download/ghostfolio-0.1.0-rc.1/ghostfolio-0.1.0-rc.1.tgz
     version: 0.1.0-rc.1
-generated: "2026-10-28T21:56:53.557238849Z"
+generated: "2026-10-31T13:40:59.891974939Z"
