@@ -16,7 +16,7 @@ annotations:
   # supported kinds are added, changed, deprecated, removed, fixed and security
   artifacthub.io/changes: |
     - kind: changed
-      description: Upgrade Ghostfolio to v3.99.0
+      description: Bump valkey subchart to 1.0.0
 maintainers:
   - name: J4NS-R
     email: git@moat.rauten.co.za
